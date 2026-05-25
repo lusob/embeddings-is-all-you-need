@@ -1451,24 +1451,57 @@
       renderCustomActions();
 
       // Progreso de carga
+      // Fase 1 (0–30%): descarga del modelo — animada con easing, no hay API de progreso real
+      // Fase 2 (30–100%): embeddings de referencia — progreso real frase a frase
       const intentKeys = Object.keys(INTENTS);
       const totalRefs = intentKeys.reduce((s, k) => s + INTENTS[k].refs.length, 0);
       const catKeys = ['_veg','_fruta','_carne','_lacteo','_cereal','_higiene','_bebida'];
       const totalSteps = totalRefs + catKeys.length;
       let done = 0;
 
-      function setProgress(step, detail) {
-        const pct = Math.round((done / totalSteps) * 100);
-        $('loading-bar').style.width = pct + '%';
-        $('loading-pct').textContent = pct + '%';
+      const PHASE1_MAX = 30; // % reservado para descarga
+      const bar = $('loading-bar');
+      const pctEl = $('loading-pct');
+
+      function setBar(pct, step, detail) {
+        bar.style.width = pct + '%';
+        pctEl.textContent = Math.round(pct) + '%';
         if (step)   $('loading-step').textContent   = step;
         if (detail) $('loading-detail').textContent = detail;
       }
 
+      // Simula progreso de descarga: sube rápido al principio, se ralentiza hacia PHASE1_MAX
+      let downloadRafId = null;
+      let simPct = 0;
+      function startDownloadSim() {
+        const start = performance.now();
+        // Curva: pct = PHASE1_MAX * (1 - e^(-t/T))  — llega al ~86% del máx en T ms
+        const T = 4000; // ms para la mitad de la curva
+        function tick(now) {
+          const t = now - start;
+          simPct = PHASE1_MAX * (1 - Math.exp(-t / T));
+          setBar(simPct);
+          downloadRafId = requestAnimationFrame(tick);
+        }
+        downloadRafId = requestAnimationFrame(tick);
+      }
+      function stopDownloadSim() {
+        if (downloadRafId) { cancelAnimationFrame(downloadRafId); downloadRafId = null; }
+      }
+
+      function setRefProgress(step, detail) {
+        // Fase 2: 30% + proporción real del 70% restante
+        const pct = PHASE1_MAX + Math.round((done / totalSteps) * (100 - PHASE1_MAX));
+        setBar(pct, step, detail);
+      }
+
       try {
         $('loading-step').textContent = 'Descargando modelo de embeddings MiniLM…';
+        startDownloadSim();
         extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-        $('loading-step').textContent = 'Calculando embeddings de referencia…';
+        stopDownloadSim();
+        // Salta limpiamente al 30% y continúa
+        setBar(PHASE1_MAX, 'Calculando embeddings de referencia…', '');
 
         // Embeddings de intenciones
         for (const intent of intentKeys) {
@@ -1478,7 +1511,7 @@
             const out = await extractor(ref, { pooling: 'mean', normalize: true });
             refEmbeddings[intent].push(Array.from(out.data));
             done++;
-            setProgress(`${cfg.icon} ${intent}`, `"${ref}"`);
+            setRefProgress(`${cfg.icon} ${intent}`, `"${ref}"`);
           }
         }
 
@@ -1496,7 +1529,7 @@
           const out = await extractor(phrase, { pooling: 'mean', normalize: true });
           catEmbeddings[key] = Array.from(out.data);
           done++;
-          setProgress('Categorías de productos…', phrase);
+          setRefProgress('Categorías de productos…', phrase);
         }
 
         await restoreCustomActionVecs();
@@ -1524,6 +1557,7 @@
         $('mic-label').textContent = 'Pulsa para hablar';
       } catch (err) {
         console.error('Error cargando MiniLM:', err);
+        stopDownloadSim();
         $('loading-step').textContent = '❌ Error cargando modelo';
         $('loading-detail').textContent = err.message || '';
         $('model-label').textContent = 'Error modelo de embeddings';
