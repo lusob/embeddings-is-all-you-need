@@ -465,8 +465,10 @@
     let transcriber = null;
     let refEmbeddings = {};
     let isListening = false;
+    let isStopping = false;
     let mediaRecorder = null;
-    let audioChunks = [];
+    let micStream = null;
+    let chunkQueue = Promise.resolve(); // serializa transcripciones
 
     // ─── DOM helpers ───────────────────────────────────────────────────────────
     const $ = id => document.getElementById(id);
@@ -967,6 +969,7 @@
       $('listening-ring').classList.remove('hidden');
       $('mic-label').textContent = 'Escuchando…';
       $('mic-label').style.color = '#ef4444';
+      $('interim-text').textContent = '⬤ Habla — Whisper transcribe cada 2.5 s…';
       setSttStatus('listening');
     }
 
@@ -978,75 +981,88 @@
       $('listening-ring').classList.add('hidden');
       $('mic-label').textContent = 'Pulsa para hablar';
       $('mic-label').style.color = '';
-      setSttStatus('ready');
+      setSttStatus('transcribing');
+    }
+
+    const CHUNK_MS = 2500; // graba en trozos de 2.5 s y transcribe cada uno
+
+    async function transcribeBlob(blob, isFinal) {
+      if (blob.size < 1000) return; // descarta chunks de silencio vacíos
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioCtx = new AudioContext({ sampleRate: 16000 });
+      let audioBuffer;
+      try {
+        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      } catch { return; }
+      const pcm = audioBuffer.getChannelData(0);
+      if (pcm.length < 3200) return; // < 0.2 s de audio real
+
+      let result;
+      try {
+        result = await transcriber(pcm, { language: 'spanish', task: 'transcribe' });
+      } catch (err) {
+        console.error('Whisper chunk error:', err);
+        return;
+      }
+      const text = (result.text || '').trim().replace(/^[\s,.\[\]()]+|[\[\]()]+$/g, '');
+      if (!text) return;
+
+      const area = $('final-text');
+      area.value = (area.value ? area.value + ' ' : '') + text;
+      // scroll al final del textarea
+      area.scrollTop = area.scrollHeight;
+      if (isFinal) {
+        $('interim-text').textContent = '';
+        classify(area.value.trim());
+      }
     }
 
     window.toggleListening = async function() {
       if (!transcriber) return;
 
+      // Si está grabando, parar
       if (isListening) {
-        // Stop recording → transcribe
+        isStopping = true;
         mediaRecorder.stop();
         return;
       }
 
-      let stream;
+      // Evita doble-arranque mientras se detiene
+      if (isStopping) return;
+
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch {
         $('mic-label').textContent = 'Permiso de micrófono denegado';
         return;
       }
 
-      audioChunks = [];
-      const mimeType = ['audio/webm', 'audio/ogg', 'audio/mp4']
+      const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg', 'audio/mp4']
         .find(m => MediaRecorder.isTypeSupported(m)) || '';
-      mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      mediaRecorder = new MediaRecorder(micStream, mimeType ? { mimeType } : {});
+      chunkQueue = Promise.resolve();
+      let chunkCount = 0;
 
-      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size < 100) return;
+        chunkCount++;
+        const isLast = mediaRecorder.state === 'inactive';
+        const blob = new Blob([e.data], { type: e.data.type || mimeType || 'audio/webm' });
+        // Encolar transcripción para que no se solapen
+        chunkQueue = chunkQueue.then(() => transcribeBlob(blob, isLast));
+      };
 
-      mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
+      mediaRecorder.onstop = () => {
+        micStream.getTracks().forEach(t => t.stop());
         micStopUI();
-        $('interim-text').textContent = '⬤ Transcribiendo con Whisper…';
-        setSttStatus('transcribing');
-
-        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        const arrayBuffer = await blob.arrayBuffer();
-        // Decode to Float32 PCM via AudioContext
-        const audioCtx = new AudioContext({ sampleRate: 16000 });
-        let audioBuffer;
-        try {
-          audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-        } catch {
-          $('interim-text').textContent = '⚠ Error decodificando audio';
-          setSttStatus('ready');
-          return;
-        }
-        const pcm = audioBuffer.getChannelData(0); // Float32Array, 16 kHz mono
-
-        try {
-          const result = await transcriber(pcm, {
-            language: 'spanish',
-            task: 'transcribe',
-            chunk_length_s: 30,
-          });
-          const text = (result.text || '').trim().replace(/^[\s,\.]+/, '');
-          $('interim-text').textContent = '';
-          if (text) {
-            const area = $('final-text');
-            area.value = (area.value ? area.value + ' ' : '') + text;
-            classify(text);
-          }
-        } catch (err) {
-          console.error('Whisper error:', err);
-          $('interim-text').textContent = '⚠ Error en transcripción';
-        }
-        setSttStatus('ready');
+        isStopping = false;
+        // El último chunk lo procesa ondataavailable con isLast=true
+        chunkQueue.then(() => setSttStatus('ready'));
       };
 
       micStartUI();
-      mediaRecorder.start();
+      // timeslice: emite ondataavailable cada CHUNK_MS ms mientras graba
+      mediaRecorder.start(CHUNK_MS);
     };
 
     window.classifyEdited = function() {
