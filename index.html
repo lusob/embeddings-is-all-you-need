@@ -169,7 +169,7 @@
     </div>
     <div class="w-72 space-y-2">
       <div class="flex justify-between mono text-xs text-slate-500">
-        <span id="loading-step">Descargando modelo MiniLM…</span>
+        <span id="loading-step">Descargando modelo de embeddings MiniLM…</span>
         <span id="loading-pct">0%</span>
       </div>
       <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
@@ -194,7 +194,7 @@
       </div>
       <div id="model-status" class="flex items-center gap-2">
         <div id="model-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#f59e0b]"></div>
-        <span id="model-label" class="mono text-xs text-amber-400">Cargando modelo…</span>
+        <span id="model-label" class="mono text-xs text-amber-400">Cargando modelo de embeddings…</span>
       </div>
     </div>
   </header>
@@ -226,7 +226,7 @@
             onclick="toggleListening()"
             disabled
             class="mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-neon opacity-40 cursor-not-allowed"
-            title="Cargando modelo…"
+            title="Cargando modelo de embeddings…"
           >
             <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 text-indigo-400">
               <path d="M8.25 4.5a3.75 3.75 0 117.5 0v8.25a3.75 3.75 0 11-7.5 0V4.5z"/>
@@ -264,6 +264,31 @@
           <ul id="shopping-list" class="space-y-1.5 min-h-[40px]">
             <li class="mono text-xs text-slate-600 italic" id="shopping-empty">Di "añade leche" o "elimina pan"…</li>
           </ul>
+        </div>
+
+        <!-- Temporizador -->
+        <div id="timer-panel" class="glass rounded-xl p-4 w-full space-y-3 hidden" style="border-color:rgba(245,158,11,0.2)">
+          <div class="flex items-center justify-between">
+            <div class="mono text-xs text-amber-400/70 uppercase tracking-wider">⏱️ Temporizador</div>
+            <button onclick="cancelTimer()" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ cancelar</button>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="relative w-16 h-16 flex-shrink-0">
+              <svg class="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(245,158,11,0.15)" stroke-width="5"/>
+                <circle id="timer-ring" cx="32" cy="32" r="26" fill="none" stroke="#f59e0b" stroke-width="5"
+                        stroke-linecap="round" stroke-dasharray="163.36" stroke-dashoffset="0"
+                        style="transition:stroke-dashoffset 0.9s linear, stroke 0.3s"/>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span id="timer-display" class="mono font-bold text-sm text-amber-400">—</span>
+              </div>
+            </div>
+            <div class="flex-1 space-y-1">
+              <div id="timer-label" class="mono text-xs text-slate-400"></div>
+              <div id="timer-total" class="mono text-xs text-slate-600"></div>
+            </div>
+          </div>
         </div>
 
         <!-- Custom actions -->
@@ -437,26 +462,12 @@
           'google esto', 'encuentra en la web', 'busca noticias de',
           'investiga sobre', 'quiero saber sobre', 'búsqueda de',
           'abre google y busca',
-        ]
-      },
-      BUSCAR_VIDEO: {
-        label: 'BUSCAR_VIDEO', icon: '▶️', color: 'red',
-        refs: [
-          'pon un video de', 'busca un video de', 'busca en youtube',
-          'quiero ver', 'ponme un video', 'abre youtube',
+          'pon un video de', 'busca un video de', 'quiero ver un video de',
           'muéstrame el video de', 'pon la canción', 'pon música de',
-          'busca el videoclip', 'busca en youtube de', 'ver video',
-          'reproducir video', 'pon en youtube',
-        ]
-      },
-      NAVEGAR: {
-        label: 'NAVEGAR', icon: '🗺️', color: 'cyan',
-        refs: [
-          'cómo llegar a', 'llévame a', 'navega a', 'abre el mapa de',
-          'dónde está', 'busca en el mapa', 'abre google maps',
-          'indicaciones para llegar a', 'ruta hacia', 'dirección de',
-          'ir a', 'localiza', 'encuentra en el mapa', 'localización de',
-          'sitio cerca de', 'cómo voy a',
+          'busca el videoclip de', 'busca en youtube',
+          'cómo llegar a', 'llévame a', 'navega a',
+          'dónde está', 'indicaciones para llegar a', 'ruta hacia',
+          'dirección de', 'localiza en el mapa', 'cerca de',
         ]
       },
       AÑADIR_ITEM: {
@@ -511,7 +522,6 @@
       'busca recetas de pasta',
       'pon un video de jazz',
       'cómo llegar a la Sagrada Família',
-      'dónde está el aeropuerto de Madrid',
       'pon un temporizador de 30 segundos',
       'avísame en 2 minutos',
     ];
@@ -545,7 +555,7 @@
     function setModelStatus(ready) {
       $('model-dot').className = `w-2 h-2 rounded-full ${ready ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]' : 'bg-amber-400 shadow-[0_0_6px_#f59e0b] animate-pulse'}`;
       $('model-label').className = `mono text-xs ${ready ? 'text-emerald-400' : 'text-amber-400'}`;
-      $('model-label').textContent = ready ? 'Modelo listo ✓' : 'Cargando modelo…';
+      $('model-label').textContent = ready ? 'Modelo de embeddings listo ✓' : 'Cargando modelo de embeddings…';
     }
 
     function setSttStatus(state) {
@@ -625,18 +635,14 @@
       if (intent === 'BUSCAR_INTERNET')
         return strip(['busca en internet','busca en google','busca información sobre',
           'busca información de','busca noticias de','investiga sobre',
-          'quiero saber sobre','búsqueda de','abre google y busca','busca','google esto'], p) || p;
-      if (intent === 'BUSCAR_VIDEO')
-        return strip(['pon un video de','busca un video de','busca en youtube de',
-          'busca en youtube','muéstrame el video de','quiero ver','ponme un video de',
-          'ponme un video','busca el videoclip de','busca el videoclip',
-          'pon la canción','pon música de','pon en youtube','reproducir video de',
-          'reproducir video','ver video de','ver video','abre youtube'], p) || p;
-      if (intent === 'NAVEGAR')
-        return strip(['cómo llegar a','llévame a','navega a','abre el mapa de',
-          'dónde está','busca en el mapa','indicaciones para llegar a',
-          'ruta hacia','dirección de','ir a','localiza','encuentra en el mapa',
-          'localización de','sitio cerca de','cómo voy a','abre google maps'], p) || p;
+          'quiero saber sobre','búsqueda de','abre google y busca',
+          'pon un video de','busca un video de','muéstrame el video de',
+          'quiero ver un video de','pon la canción','pon música de',
+          'busca el videoclip de','busca en youtube',
+          'cómo llegar a','llévame a','navega a','dónde está',
+          'indicaciones para llegar a','ruta hacia','dirección de',
+          'localiza en el mapa','cerca de',
+          'busca','google esto'], p) || p;
       if (intent === 'TEMPORIZADOR')
         return strip(['pon un temporizador de','pon un timer de','cuenta atrás de',
           'avísame en','alarma en','despertador en','recuérdame en',
@@ -810,17 +816,7 @@
       if (intent === 'BUSCAR_INTERNET') {
         const query = param || phrase;
         window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
-        return `🔍 Buscando: "${query}"`;
-      }
-      if (intent === 'BUSCAR_VIDEO') {
-        const query = param || phrase;
-        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
-        return `▶️ YouTube: "${query}"`;
-      }
-      if (intent === 'NAVEGAR') {
-        const query = param || phrase;
-        window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, '_blank');
-        return `🗺️ Maps: "${query}"`;
+        return `🔍 Google: "${query}"`;
       }
       if (intent === 'TEMPORIZADOR') {
         const secs = parseTimerSeconds(param || phrase);
@@ -1204,89 +1200,76 @@
       fxAnimId = requestAnimationFrame(tick);
     }
 
-    // ── 7. Countdown timer (TEMPORIZADOR) ────────────────────────────────────
+    // ── 7. Countdown timer (TEMPORIZADOR) — DOM panel ────────────────────────
     let timerInterval = null;
-    function fxCountdown(totalSecs) {
-      // Cancela temporizador anterior si lo hay
-      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-      fxClear();
+    const RING_CIRC = 2 * Math.PI * 26; // 163.36 px — matches SVG r=26
 
-      const W = fxCanvas.width, H = fxCanvas.height;
+    function fxCountdown(totalSecs) {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
       let remaining = totalSecs;
 
-      // Panel de temporizador en esquina superior derecha del canvas
-      function drawTimer(secs, urgent) {
-        fxCtx.clearRect(0, 0, W, H);
+      const panel   = $('timer-panel');
+      const ring    = $('timer-ring');
+      const display = $('timer-display');
+      const label   = $('timer-label');
+      const total   = $('timer-total');
 
-        const cx = W / 2, cy = H / 2;
-        const R = Math.min(W, H) * 0.22;
+      panel.classList.remove('hidden');
+      total.textContent = `Total: ${formatDuration(totalSecs)}`;
+
+      function update(secs) {
+        const urgent   = secs <= 5 && secs > 0;
         const progress = secs / totalSecs;
-        const accent = urgent ? '#ef4444' : '#f59e0b';
-        const accentDim = urgent ? '#ef444433' : '#f59e0b33';
-
-        // Outer glow ring (background)
-        fxCtx.beginPath();
-        fxCtx.arc(cx, cy, R, 0, Math.PI * 2);
-        fxCtx.strokeStyle = accentDim;
-        fxCtx.lineWidth = 10;
-        fxCtx.stroke();
-
-        // Progress arc
-        fxCtx.beginPath();
-        fxCtx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
-        fxCtx.strokeStyle = accent;
-        fxCtx.lineWidth = 10;
-        fxCtx.shadowColor = accent;
-        fxCtx.shadowBlur = urgent ? 30 : 14;
-        fxCtx.lineCap = 'round';
-        fxCtx.stroke();
-        fxCtx.shadowBlur = 0;
-
-        // Time text
+        const offset   = RING_CIRC * (1 - progress);
         const mm = String(Math.floor(secs / 60)).padStart(2, '0');
         const ss = String(secs % 60).padStart(2, '0');
-        const timeStr = secs >= 60 ? `${mm}:${ss}` : `${secs}`;
-        const fontSize = secs >= 60 ? Math.round(R * 0.85) : Math.round(R * 1.1);
-        fxCtx.font = `700 ${fontSize}px "JetBrains Mono", monospace`;
-        fxCtx.textAlign = 'center';
-        fxCtx.textBaseline = 'middle';
-        fxCtx.fillStyle = accent;
-        fxCtx.shadowColor = accent;
-        fxCtx.shadowBlur = urgent ? 20 : 8;
-        if (urgent) {
-          // Subtle shake on last 5s
-          const dx = (Math.random() - 0.5) * 4;
-          fxCtx.fillText(timeStr, cx + dx, cy);
-        } else {
-          fxCtx.fillText(timeStr, cx, cy);
-        }
-        fxCtx.shadowBlur = 0;
 
-        // Label
-        fxCtx.font = `400 ${Math.round(R * 0.22)}px "Inter", sans-serif`;
-        fxCtx.fillStyle = urgent ? '#ef444499' : '#f59e0b88';
-        fxCtx.fillText('TEMPORIZADOR', cx, cy + R * 0.6);
+        ring.style.strokeDashoffset = offset;
+        ring.style.stroke = urgent ? '#ef4444' : '#f59e0b';
+        ring.style.filter = urgent ? 'drop-shadow(0 0 6px #ef4444)' : 'drop-shadow(0 0 4px #f59e0b88)';
+        display.textContent = secs >= 60 ? `${mm}:${ss}` : `${secs}`;
+        display.style.color = urgent ? '#ef4444' : '#f59e0b';
+        label.textContent = urgent ? '⚠ ¡Casi!' : 'en curso…';
+        label.style.color = urgent ? '#ef4444' : '';
+
+        if (urgent) {
+          panel.style.borderColor = 'rgba(239,68,68,0.4)';
+          panel.classList.add('animate-pulse');
+        } else {
+          panel.style.borderColor = 'rgba(245,158,11,0.2)';
+          panel.classList.remove('animate-pulse');
+        }
       }
 
-      drawTimer(remaining, false);
+      update(remaining);
 
       timerInterval = setInterval(() => {
         remaining--;
         if (remaining <= 0) {
           clearInterval(timerInterval);
           timerInterval = null;
-          // Alarma final: fuegos + limpiar canvas tras 3s
-          fxClear();
+          ring.style.strokeDashoffset = RING_CIRC;
+          display.textContent = '✓';
+          display.style.color = '#10b981';
+          label.textContent = '¡Tiempo!';
+          label.style.color = '#10b981';
+          panel.style.borderColor = 'rgba(16,185,129,0.3)';
+          panel.classList.remove('animate-pulse');
           fxFireworks();
-          // Notificación del sistema si el usuario la permitió
           if (Notification.permission === 'granted') {
             new Notification('⏱️ ¡Tiempo!', { body: `Temporizador de ${formatDuration(totalSecs)} completado.` });
           }
+          setTimeout(() => panel.classList.add('hidden'), 4000);
           return;
         }
-        drawTimer(remaining, remaining <= 5);
+        update(remaining);
       }, 1000);
     }
+
+    window.cancelTimer = function() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      $('timer-panel').classList.add('hidden');
+    };
 
     // ─── Marcar frase como ejecutada en el textarea ───────────────────────────
     function consumePhrase(phrase) {
@@ -1483,7 +1466,7 @@
       }
 
       try {
-        $('loading-step').textContent = 'Descargando modelo MiniLM…';
+        $('loading-step').textContent = 'Descargando modelo de embeddings MiniLM…';
         extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
         $('loading-step').textContent = 'Calculando embeddings de referencia…';
 
@@ -1543,7 +1526,7 @@
         console.error('Error cargando MiniLM:', err);
         $('loading-step').textContent = '❌ Error cargando modelo';
         $('loading-detail').textContent = err.message || '';
-        $('model-label').textContent = 'Error MiniLM';
+        $('model-label').textContent = 'Error modelo de embeddings';
         $('model-dot').className = 'w-2 h-2 rounded-full bg-red-400';
       }
     }
