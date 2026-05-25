@@ -316,136 +316,103 @@
 
     // ─── Intenciones y frases de referencia ───────────────────────────────────
     const INTENTS = {
-      BUSCAR_INTERNET: {
-        label: 'BUSCAR_INTERNET',
-        icon: '🔍',
-        color: 'indigo',
+      SALUDAR: {
+        label: 'SALUDAR', icon: '👋', color: 'pink',
         refs: [
-          'busca en internet',
-          'buscar en google',
-          'abre google y busca',
-          'quiero buscar información sobre',
-          'busca información',
-          'google esto',
-          'encuentra en la web',
-          'dame resultados de búsqueda sobre',
-          'busca noticias de',
-          'investiga sobre',
+          'hola', 'buenos días', 'buenas tardes', 'buenas noches',
+          'qué tal', 'cómo estás', 'hey', 'saludos', 'hola amigo', 'qué hay',
+          'hi', 'hello', 'good morning',
         ]
       },
-      ENCENDER_LUZ: {
-        label: 'ENCENDER_LUZ',
-        icon: '💡',
-        color: 'amber',
+      FUEGOS_ARTIFICIALES: {
+        label: 'FUEGOS_ARTIFICIALES', icon: '🎆', color: 'amber',
         refs: [
-          'enciende la luz',
-          'pon la luz',
-          'activa la iluminación',
-          'aclara la pantalla',
-          'modo claro',
-          'ilumina',
-          'luz on',
-          'pon fondo blanco',
-          'activa el modo día',
+          'lanza fuegos artificiales', 'fuegos artificiales', 'explosión de colores',
+          'celebra', 'celebración', 'fiesta', 'party', 'explota', 'explosión',
+          'fuegos', 'cohetes', 'petardos', 'confetti', 'festeja',
         ]
       },
-      APAGAR_LUZ: {
-        label: 'APAGAR_LUZ',
-        icon: '🌙',
-        color: 'cyan',
+      MATRIX: {
+        label: 'MATRIX', icon: '🟩', color: 'emerald',
         refs: [
-          'apaga la luz',
-          'pon oscuro',
-          'modo oscuro',
-          'apaga la iluminación',
-          'fondo negro',
-          'modo noche',
-          'luz off',
-          'oscurece la pantalla',
-          'desactiva la luz',
+          'muéstrame the matrix', 'activa matrix', 'código matrix',
+          'lluvia de código', 'lluvia verde', 'código verde', 'efecto matrix',
+          'modo hacker', 'hack', 'hacker', 'código binario',
+          'follow the white rabbit', 'take the red pill',
         ]
       },
-      MODIFICAR_UI: {
-        label: 'MODIFICAR_UI',
-        icon: '🎨',
-        color: 'emerald',
+      LANZAR_OBJETO: {
+        label: 'LANZAR_OBJETO', icon: '🚀', color: 'cyan',
         refs: [
-          'cambia el color a',
-          'pon el color',
-          'modifica la interfaz',
-          'cambia el acento a',
-          'color de la ui',
-          'pon el tema en',
-          'cambia a color',
-          'colorea la interfaz',
-          'pon el fondo en color',
-          'cambia el estilo visual',
+          'lanza un cohete', 'lanza una pelota', 'lanza algo',
+          'anima algo', 'mueve algo', 'pon algo en movimiento',
+          'manda algo volando', 'tira algo', 'dispara algo',
+          'rebota algo', 'animación física', 'física',
+        ]
+      },
+      CAMBIAR_FONDO: {
+        label: 'CAMBIAR_FONDO', icon: '🎨', color: 'purple',
+        refs: [
+          'cambia el fondo', 'pon el fondo', 'fondo de color',
+          'cambia el fondo a', 'pon el fondo en', 'color de fondo',
+          'fondo rojo', 'fondo azul', 'fondo verde', 'fondo morado',
+          'fondo oscuro', 'fondo claro', 'background',
+        ]
+      },
+      MODO_CLARO: {
+        label: 'MODO_CLARO', icon: '☀️', color: 'amber',
+        refs: [
+          'enciende la luz', 'modo claro', 'modo día', 'fondo blanco',
+          'aclara la pantalla', 'light mode', 'pon claro',
+          'más luz', 'ilumina', 'luz on',
+        ]
+      },
+      MODO_OSCURO: {
+        label: 'MODO_OSCURO', icon: '🌙', color: 'indigo',
+        refs: [
+          'apaga la luz', 'modo oscuro', 'modo noche', 'fondo negro',
+          'oscurece la pantalla', 'dark mode', 'pon oscuro',
+          'menos luz', 'apaga', 'luz off',
         ]
       },
       ESCRIBIR_TEXTO: {
-        label: 'ESCRIBIR_TEXTO',
-        icon: '✍️',
-        color: 'purple',
+        label: 'ESCRIBIR_TEXTO', icon: '✍️', color: 'cyan',
         refs: [
-          'escribe',
-          'escribe en el área de texto',
-          'anota',
-          'escribe esto',
-          'pon en el texto',
-          'inserta el texto',
-          'copia esto al área',
-          'agrega al texto',
-          'escribe en la caja de texto',
-          'dicta',
+          'escribe', 'anota', 'escribe esto', 'pon en el texto',
+          'inserta el texto', 'agrega al texto', 'dicta', 'escribe aquí',
+          'toma nota', 'apunta',
         ]
       },
       BORRAR_TEXTO: {
-        label: 'BORRAR_TEXTO',
-        icon: '🗑️',
-        color: 'red',
+        label: 'BORRAR_TEXTO', icon: '🗑️', color: 'red',
         refs: [
-          'borra el texto',
-          'limpia el área',
-          'borra todo',
-          'elimina el texto',
-          'vacía la caja',
-          'borra lo que escribiste',
-          'limpia el cuadro de texto',
-          'elimina el contenido',
-          'borra lo escrito',
-          'clear',
+          'borra el texto', 'limpia', 'borra todo', 'elimina el texto',
+          'borra lo escrito', 'limpia el área', 'vacía', 'clear', 'reset texto',
+          'borra las notas',
         ]
       },
-      SALUDAR: {
-        label: 'SALUDAR',
-        icon: '👋',
-        color: 'pink',
+      BUSCAR_INTERNET: {
+        label: 'BUSCAR_INTERNET', icon: '🔍', color: 'indigo',
         refs: [
-          'hola',
-          'buenos días',
-          'buenas tardes',
-          'buenas noches',
-          'qué tal',
-          'cómo estás',
-          'hey',
-          'saludos',
-          'hola amigo',
-          'qué hay',
+          'busca en internet', 'busca en google', 'busca información sobre',
+          'google esto', 'encuentra en la web', 'busca noticias de',
+          'investiga sobre', 'quiero saber sobre', 'búsqueda de',
+          'abre google y busca',
         ]
       },
     };
 
     const EXAMPLE_COMMANDS = [
       'hola buenos días',
-      'enciende la luz',
-      'apaga la luz',
-      'cambia el color a verde',
-      'cambia el acento a rojo',
-      'cambia el color a morado',
-      'busca inteligencia artificial en google',
+      'fuegos artificiales',
+      'activa matrix',
+      'lanza un cohete',
+      'cambia el fondo a azul',
+      'modo claro',
+      'modo oscuro',
       'escribe hola mundo',
       'borra el texto',
-      'busca recetas de pasta',
+      'busca inteligencia artificial',
     ];
 
     const CONFIDENCE_THRESHOLD = 0.35;
@@ -453,6 +420,9 @@
       indigo: '#6366f1', amber: '#f59e0b', emerald: '#10b981',
       cyan: '#06b6d4', purple: '#a855f7', red: '#ef4444', pink: '#ec4899'
     };
+
+    // Frases ya ejecutadas — se excluyen de futuros classify()
+    const executedPhrases = new Set();
 
     // ─── Estado global ─────────────────────────────────────────────────────────
     let extractor = null;
@@ -522,44 +492,38 @@
       card.classList.remove('hidden');
     }
 
-    // ─── Extracción de parámetro de la frase ──────────────────────────────────
+    // ─── Extracción de parámetro ──────────────────────────────────────────────
+    const CSS_COLORS = {
+      rojo: '#ef4444', verde: '#10b981', azul: '#3b82f6', amarillo: '#f59e0b',
+      morado: '#a855f7', rosa: '#ec4899', naranja: '#f97316', cyan: '#06b6d4',
+      blanco: '#f1f5f9', negro: '#020617', turquesa: '#14b8a6', lima: '#84cc16',
+    };
+
+    function extractColor(text) {
+      const p = text.toLowerCase();
+      const found = Object.entries(CSS_COLORS).find(([name]) => p.includes(name));
+      return found ? found[1] : null;
+    }
+
     function extractParam(phrase, intent) {
       const p = phrase.toLowerCase().trim();
-      const stripPrefixes = (prefixes, str) => {
+      const strip = (prefixes, str) => {
         for (const pfx of prefixes) {
-          const re = new RegExp(`^${pfx}\\s*`, 'i');
-          const m = str.replace(re, '');
+          const m = str.replace(new RegExp(`^${pfx}\\s*`, 'i'), '');
           if (m !== str) return m.trim();
         }
         return str;
       };
-
-      if (intent === 'BUSCAR_INTERNET') {
-        return stripPrefixes([
-          'busca en internet', 'buscar en google', 'abre google y busca',
-          'busca información sobre', 'busca información de', 'busca',
-          'google esto', 'encuentra en la web', 'dame resultados de búsqueda sobre',
-          'busca noticias de', 'investiga sobre', 'quiero buscar información sobre',
-          'quiero buscar'
-        ], p) || p;
-      }
-      if (intent === 'MODIFICAR_UI') {
-        return stripPrefixes([
-          'cambia el color a', 'pon el color', 'cambia el acento a',
-          'color de la ui', 'pon el tema en', 'cambia a color',
-          'pon el fondo en color', 'cambia el estilo visual a',
-          'modifica la interfaz a', 'colorea la interfaz de',
-          'cambia a', 'pon',
-        ], p) || '';
-      }
-      if (intent === 'ESCRIBIR_TEXTO') {
-        return stripPrefixes([
-          'escribe en el área de texto', 'escribe en la caja de texto',
-          'inserta el texto', 'copia esto al área', 'agrega al texto',
-          'escribe esto', 'pon en el texto', 'escribe',
-          'anota', 'dicta',
-        ], p) || p;
-      }
+      if (intent === 'BUSCAR_INTERNET')
+        return strip(['busca en internet','busca en google','busca información sobre',
+          'busca información de','busca noticias de','investiga sobre',
+          'quiero saber sobre','búsqueda de','abre google y busca','busca','google esto'], p) || p;
+      if (intent === 'ESCRIBIR_TEXTO')
+        return strip(['escribe aquí','toma nota de','anota','escribe esto','agrega al texto',
+          'inserta el texto','escribe'], p) || p;
+      if (intent === 'CAMBIAR_FONDO')
+        return strip(['cambia el fondo a','pon el fondo en','pon el fondo','fondo de color',
+          'cambia el fondo','color de fondo'], p) || p;
       return '';
     }
 
@@ -567,55 +531,54 @@
     function executeAction(intent, phrase) {
       const param = extractParam(phrase, intent);
 
+      if (intent === 'SALUDAR') {
+        fxWavingHand();
+        return '¡Hola! 👋';
+      }
+      if (intent === 'FUEGOS_ARTIFICIALES') {
+        fxFireworks();
+        return '🎆 ¡Fuegos artificiales!';
+      }
+      if (intent === 'MATRIX') {
+        fxMatrixRain();
+        return '🟩 Entrando en The Matrix…';
+      }
+      if (intent === 'LANZAR_OBJETO') {
+        fxBouncingBall();
+        return '🚀 ¡Objeto lanzado!';
+      }
+      if (intent === 'CAMBIAR_FONDO') {
+        const color = extractColor(phrase) || '#1e1b4b';
+        fxChangeBg(color);
+        return `🎨 Fondo → ${color}`;
+      }
+      if (intent === 'MODO_CLARO') {
+        fxChangeBg('#f8fafc', true);
+        return '☀️ Modo claro';
+      }
+      if (intent === 'MODO_OSCURO') {
+        fxTvShutoff();
+        return '🌙 Modo oscuro + glitch';
+      }
       if (intent === 'BUSCAR_INTERNET') {
         const query = param || phrase;
         window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
-        return `Abriendo Google: "${query}"`;
+        return `🔍 Buscando: "${query}"`;
       }
-
-      if (intent === 'ENCENDER_LUZ') {
-        fxParticleBurst();
-        return 'Explosión de partículas ☀️';
-      }
-
-      if (intent === 'APAGAR_LUZ') {
-        fxTvShutoff();
-        return 'CRT shutoff + glitch 📺';
-      }
-
-      if (intent === 'MODIFICAR_UI') {
-        const CSS_COLORS = {
-          rojo: '#ef4444', verde: '#10b981', azul: '#3b82f6',
-          amarillo: '#f59e0b', morado: '#a855f7', rosa: '#ec4899',
-          naranja: '#f97316', cyan: '#06b6d4', blanco: '#e2e8f0',
-        };
-        const found = Object.entries(CSS_COLORS).find(([name]) => param.includes(name));
-        const color = found ? found[1] : '#6366f1';
-        fxColorRipple(color);
-        return `Ripple + tema → ${found ? found[0] : 'indigo'} (${color})`;
-      }
-
       if (intent === 'ESCRIBIR_TEXTO') {
         const area = $('write-area');
         area.value += (area.value ? '\n' : '') + param;
         area.style.boxShadow = '0 0 0 2px #a855f766';
         setTimeout(() => { area.style.boxShadow = ''; }, 800);
-        return `Escrito: "${param}"`;
+        return `✍️ Escrito: "${param}"`;
       }
-
       if (intent === 'BORRAR_TEXTO') {
         const area = $('write-area');
         area.value = '';
         area.style.boxShadow = '0 0 0 2px #ef444466';
         setTimeout(() => { area.style.boxShadow = ''; }, 600);
-        return 'Texto borrado';
+        return '🗑️ Texto borrado';
       }
-
-      if (intent === 'SALUDAR') {
-        fxMatrixRain();
-        return 'Matrix rain activado 🟩';
-      }
-
       return '—';
     }
 
@@ -637,96 +600,147 @@
       fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
     }
 
-    // ── 1. Particle burst (ENCENDER_LUZ) ──────────────────────────────────────
-    function fxParticleBurst() {
-      fxClear();
-      const W = fxCanvas.width, H = fxCanvas.height;
-      const cx = W / 2, cy = H / 2;
-      const COUNT = 160;
-      const COLORS = ['#f59e0b','#fbbf24','#fde68a','#fff','#6366f1','#10b981','#06b6d4'];
-
-      const particles = Array.from({length: COUNT}, () => {
+    // ── helpers de partículas ─────────────────────────────────────────────────
+    function spawnBurst(cx, cy, count, colors, speedMin, speedMax, sizeMin, sizeMax, gravity) {
+      return Array.from({length: count}, () => {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 4 + Math.random() * 14;
-        const size  = 2 + Math.random() * 5;
+        const speed = speedMin + Math.random() * (speedMax - speedMin);
         return {
           x: cx, y: cy,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          size, color: COLORS[Math.floor(Math.random() * COLORS.length)],
-          life: 1, decay: 0.012 + Math.random() * 0.018,
-          trail: [],
+          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+          size: sizeMin + Math.random() * (sizeMax - sizeMin),
+          color: colors[Math.floor(Math.random() * colors.length)],
+          life: 1, decay: 0.010 + Math.random() * 0.016,
+          gravity, trail: [],
         };
       });
+    }
 
-      // Shockwave ring
-      let ringR = 0, ringLife = 1;
-
-      function tick() {
-        fxCtx.clearRect(0, 0, W, H);
-
-        // Draw shockwave
-        if (ringLife > 0) {
-          ringR += 18;
-          ringLife -= 0.025;
+    function drawParticles(particles) {
+      let alive = false;
+      for (const p of particles) {
+        if (p.life <= 0) continue;
+        alive = true;
+        p.trail.push({x: p.x, y: p.y});
+        if (p.trail.length > 7) p.trail.shift();
+        for (let i = 0; i < p.trail.length - 1; i++) {
+          fxCtx.globalAlpha = (i / p.trail.length) * p.life * 0.4;
           fxCtx.beginPath();
-          fxCtx.arc(cx, cy, ringR, 0, Math.PI * 2);
-          fxCtx.strokeStyle = `rgba(245,158,11,${ringLife * 0.6})`;
-          fxCtx.lineWidth = 3;
-          fxCtx.shadowColor = '#f59e0b';
-          fxCtx.shadowBlur = 20;
+          fxCtx.moveTo(p.trail[i].x, p.trail[i].y);
+          fxCtx.lineTo(p.trail[i+1].x, p.trail[i+1].y);
+          fxCtx.strokeStyle = p.color;
+          fxCtx.lineWidth = p.size * (i / p.trail.length);
           fxCtx.stroke();
-          fxCtx.shadowBlur = 0;
         }
+        fxCtx.globalAlpha = p.life;
+        fxCtx.beginPath();
+        fxCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        fxCtx.fillStyle = p.color;
+        fxCtx.shadowColor = p.color; fxCtx.shadowBlur = 10;
+        fxCtx.fill();
+        fxCtx.shadowBlur = 0; fxCtx.globalAlpha = 1;
+        p.x += p.vx; p.y += p.vy;
+        p.vy += p.gravity; p.vx *= 0.98;
+        p.life -= p.decay;
+      }
+      return alive;
+    }
 
-        let alive = false;
-        for (const p of particles) {
-          if (p.life <= 0) continue;
-          alive = true;
-          p.trail.push({x: p.x, y: p.y});
-          if (p.trail.length > 8) p.trail.shift();
+    // ── 1. Waving hand (SALUDAR) ──────────────────────────────────────────────
+    function fxWavingHand() {
+      fxClear();
+      const W = fxCanvas.width, H = fxCanvas.height;
+      const START = performance.now();
+      const DURATION = 2800;
+      // Confetti burst underneath
+      const confettiColors = ['#f59e0b','#ec4899','#6366f1','#10b981','#ef4444','#06b6d4','#a855f7'];
+      const confetti = spawnBurst(W/2, H*0.4, 80, confettiColors, 3, 12, 3, 7, 0.12);
 
-          // Draw trail
-          for (let i = 0; i < p.trail.length - 1; i++) {
-            fxCtx.globalAlpha = (i / p.trail.length) * p.life * 0.5;
-            fxCtx.beginPath();
-            fxCtx.moveTo(p.trail[i].x, p.trail[i].y);
-            fxCtx.lineTo(p.trail[i+1].x, p.trail[i+1].y);
-            fxCtx.strokeStyle = p.color;
-            fxCtx.lineWidth = p.size * (i / p.trail.length);
-            fxCtx.stroke();
-          }
-          fxCtx.globalAlpha = 1;
+      function tick(now) {
+        fxCtx.clearRect(0, 0, W, H);
+        const elapsed = now - START;
+        const t = elapsed / DURATION;
 
-          // Draw particle
-          fxCtx.beginPath();
-          fxCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-          fxCtx.fillStyle = p.color;
-          fxCtx.shadowColor = p.color;
-          fxCtx.shadowBlur = 12;
-          fxCtx.globalAlpha = p.life;
-          fxCtx.fill();
-          fxCtx.globalAlpha = 1;
-          fxCtx.shadowBlur = 0;
+        // Waving hand emoji — oscillates and bounces in
+        const scale = t < 0.15 ? t/0.15 : (t > 0.85 ? (1-t)/0.15 : 1);
+        const waveAngle = Math.sin(elapsed / 120) * 0.45;
+        const yBounce = H * 0.35 - Math.abs(Math.sin(elapsed / 300)) * 30;
+        const fontSize = Math.round(W * 0.18 * scale);
+        fxCtx.save();
+        fxCtx.translate(W/2, yBounce);
+        fxCtx.rotate(waveAngle);
+        fxCtx.font = `${fontSize}px serif`;
+        fxCtx.textAlign = 'center';
+        fxCtx.textBaseline = 'middle';
+        fxCtx.shadowColor = '#f59e0b'; fxCtx.shadowBlur = 40 * scale;
+        fxCtx.fillText('👋', 0, 0);
+        fxCtx.shadowBlur = 0;
+        fxCtx.restore();
 
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.18; // gravity
-          p.vx *= 0.98;
-          p.life -= p.decay;
-        }
+        drawParticles(confetti);
 
-        if (alive || ringLife > 0) fxAnimId = requestAnimationFrame(tick);
+        if (elapsed < DURATION) fxAnimId = requestAnimationFrame(tick);
         else fxClear();
       }
       fxAnimId = requestAnimationFrame(tick);
     }
 
-    // ── 2. TV shutoff + glitch (APAGAR_LUZ) ──────────────────────────────────
+    // ── 2. Fireworks (FUEGOS_ARTIFICIALES) ────────────────────────────────────
+    function fxFireworks() {
+      fxClear();
+      const W = fxCanvas.width, H = fxCanvas.height;
+      const COLORS = ['#f59e0b','#fbbf24','#ec4899','#6366f1','#10b981','#ef4444','#06b6d4','#fff','#a855f7'];
+      const END_AT = performance.now() + 4500;
+      const shells = []; // active bursts
+
+      function launchShell() {
+        const cx = W * (0.2 + Math.random() * 0.6);
+        const cy = H * (0.1 + Math.random() * 0.5);
+        const col = COLORS[Math.floor(Math.random() * COLORS.length)];
+        const burst = spawnBurst(cx, cy, 90, [col, '#fff', col], 3, 13, 2, 5, 0.14);
+        // shockwave ring
+        shells.push({ particles: burst, ring: { x:cx, y:cy, r:0, life:1, color:col } });
+      }
+
+      // Launch 5 shells staggered
+      for (let i = 0; i < 5; i++) setTimeout(launchShell, i * 700);
+      // Keep launching while active
+      const interval = setInterval(() => {
+        if (performance.now() < END_AT) launchShell();
+        else clearInterval(interval);
+      }, 600);
+
+      function tick(now) {
+        fxCtx.fillStyle = 'rgba(5,8,16,0.25)';
+        fxCtx.fillRect(0, 0, W, H);
+
+        let anyAlive = now < END_AT;
+        for (const s of shells) {
+          const pa = drawParticles(s.particles);
+          if (pa) anyAlive = true;
+          // ring
+          if (s.ring.life > 0) {
+            s.ring.r += 14; s.ring.life -= 0.03;
+            fxCtx.beginPath();
+            fxCtx.arc(s.ring.x, s.ring.y, s.ring.r, 0, Math.PI*2);
+            fxCtx.strokeStyle = s.ring.color;
+            fxCtx.globalAlpha = s.ring.life * 0.6;
+            fxCtx.lineWidth = 2;
+            fxCtx.shadowColor = s.ring.color; fxCtx.shadowBlur = 15;
+            fxCtx.stroke();
+            fxCtx.shadowBlur = 0; fxCtx.globalAlpha = 1;
+            anyAlive = true;
+          }
+        }
+        if (anyAlive) fxAnimId = requestAnimationFrame(tick);
+        else fxClear();
+      }
+      fxAnimId = requestAnimationFrame(tick);
+    }
+
+    // ── 3. TV shutoff + glitch (MODO_OSCURO) ─────────────────────────────────
     function fxTvShutoff() {
       fxClear();
-
-      // Add glitch layers
       const glitchR = document.createElement('div');
       const glitchB = document.createElement('div');
       const scanline = document.createElement('div');
@@ -737,178 +751,192 @@
       document.body.appendChild(glitchB);
       document.body.appendChild(scanline);
 
-      // Draw static noise on canvas
       const W = fxCanvas.width, H = fxCanvas.height;
       let frame = 0;
-      const NOISE_FRAMES = 18;
-
-      function drawNoise(alpha) {
-        const imageData = fxCtx.createImageData(W, H);
-        const data = imageData.data;
-        for (let i = 0; i < data.length; i += 4) {
-          const v = Math.random() > 0.5 ? 255 : 0;
-          data[i] = data[i+1] = data[i+2] = v;
-          data[i+3] = alpha * 255 * Math.random();
-        }
-        fxCtx.putImageData(imageData, 0, 0);
-      }
-
       function tick() {
-        const progress = frame / NOISE_FRAMES;
-        const alpha = progress < 0.5 ? progress * 0.4 : (1 - progress) * 0.4;
-        drawNoise(alpha);
+        const prog = frame / 18;
+        const alpha = prog < 0.5 ? prog * 0.4 : (1-prog) * 0.4;
+        const img = fxCtx.createImageData(W, H);
+        for (let i = 0; i < img.data.length; i+=4) {
+          const v = Math.random() > 0.5 ? 255 : 0;
+          img.data[i] = img.data[i+1] = img.data[i+2] = v;
+          img.data[i+3] = alpha * 255 * Math.random();
+        }
+        fxCtx.putImageData(img, 0, 0);
         frame++;
-        if (frame < NOISE_FRAMES) fxAnimId = requestAnimationFrame(tick);
+        if (frame < 18) fxAnimId = requestAnimationFrame(tick);
         else {
           fxClear();
-          // TV shutoff white line
-          const tvLayer = document.createElement('div');
-          tvLayer.className = 'tv-off-layer';
-          document.body.appendChild(tvLayer);
-          setTimeout(() => tvLayer.remove(), 700);
-          setTimeout(() => {
-            glitchR.remove(); glitchB.remove(); scanline.remove();
-          }, 900);
+          const tv = document.createElement('div');
+          tv.className = 'tv-off-layer';
+          document.body.appendChild(tv);
+          document.body.style.background = '#020617';
+          setTimeout(() => tv.remove(), 700);
+          setTimeout(() => { glitchR.remove(); glitchB.remove(); scanline.remove(); }, 900);
         }
       }
       fxAnimId = requestAnimationFrame(tick);
-
       setTimeout(() => { glitchR.remove(); glitchB.remove(); }, 1200);
       setTimeout(() => scanline.remove(), 3500);
     }
 
-    // ── 3. Color ripple + theme recolor (MODIFICAR_UI) ───────────────────────
-    function fxColorRipple(color) {
+    // ── 4. Matrix rain (MATRIX) ───────────────────────────────────────────────
+    function fxMatrixRain() {
       fxClear();
-
-      // Theme: update all glass borders and neon accents
-      document.documentElement.style.setProperty('--accent', color);
-      const hex = color.replace('#','');
-      const cr = parseInt(hex.slice(0,2),16), cg = parseInt(hex.slice(2,4),16), cb = parseInt(hex.slice(4,6),16);
-
-      // Ripple from center of mic button
-      const micBtn = $('mic-btn');
-      const rect = micBtn.getBoundingClientRect();
-      const ox = rect.left + rect.width / 2;
-      const oy = rect.top + rect.height / 2;
-      const maxR = Math.hypot(Math.max(ox, fxCanvas.width - ox), Math.max(oy, fxCanvas.height - oy)) * 1.1;
-
-      let radius = 0;
-      let alpha = 0.45;
-
-      // Draw 3 ripple rings with offset timing
-      const rings = [{r: 0, delay: 0}, {r: 0, delay: 80}, {r: 0, delay: 160}];
-      const startTimes = rings.map((rng, i) => performance.now() + rng.delay);
+      const W = fxCanvas.width, H = fxCanvas.height;
+      const FS = 14, COLS = Math.floor(W / FS);
+      const CHARS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ01ハヒフヘホマミムメモヤユヨラリルレロワヲン'.split('');
+      const drops = Array(COLS).fill(0).map(() => Math.random() * -H / FS);
+      const END_AT = performance.now() + 5000;
 
       function tick(now) {
-        fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
-        let anyAlive = false;
-
-        for (let i = 0; i < rings.length; i++) {
-          const elapsed = Math.max(0, now - startTimes[i]);
-          const t = elapsed / 900;
-          if (t > 1.4) continue;
-          anyAlive = true;
-          const r = t * maxR;
-          const a = Math.max(0, 0.5 * (1 - t * 0.75));
-
-          fxCtx.beginPath();
-          fxCtx.arc(ox, oy, r, 0, Math.PI * 2);
-          fxCtx.strokeStyle = `rgba(${cr},${cg},${cb},${a})`;
-          fxCtx.lineWidth = 6 - i * 1.5;
-          fxCtx.shadowColor = color;
-          fxCtx.shadowBlur = 30;
-          fxCtx.stroke();
-
-          // Fill wave that fades out
-          if (i === 0 && t < 0.6) {
-            fxCtx.beginPath();
-            fxCtx.arc(ox, oy, r, 0, Math.PI * 2);
-            fxCtx.fillStyle = `rgba(${cr},${cg},${cb},${0.07 * (1 - t / 0.6)})`;
-            fxCtx.fill();
+        fxCtx.fillStyle = 'rgba(5,8,16,0.15)';
+        fxCtx.fillRect(0, 0, W, H);
+        fxCtx.font = `${FS}px "JetBrains Mono", monospace`;
+        for (let i = 0; i < COLS; i++) {
+          const y = drops[i] * FS;
+          if (y > 0) {
+            fxCtx.fillStyle = '#fff'; fxCtx.shadowColor = '#10b981'; fxCtx.shadowBlur = 10;
+            fxCtx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], i*FS, y);
+          }
+          if (y > FS) {
+            fxCtx.fillStyle = `rgba(16,185,129,${0.4+Math.random()*0.5})`; fxCtx.shadowBlur = 4;
+            fxCtx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], i*FS, y-FS);
           }
           fxCtx.shadowBlur = 0;
+          if (drops[i]*FS > H && Math.random()>0.975) drops[i]=0;
+          drops[i] += 0.6+Math.random()*0.4;
         }
-
-        // Recolor all .glass borders progressively
-        const progress = Math.min(1, (now - startTimes[0]) / 600);
-        document.querySelectorAll('.glass, .glass-amber, .glass-emerald, .glass-cyan').forEach(el => {
-          el.style.borderColor = `rgba(${cr},${cg},${cb},${0.15 + 0.1 * progress})`;
-        });
-        // Recolor neon mic
-        $('mic-icon').style.color = color;
-        $('mic-icon').style.filter = `drop-shadow(0 0 6px ${color})`;
-
-        if (anyAlive) fxAnimId = requestAnimationFrame(tick);
-        else fxClear();
+        if (now < END_AT) { fxAnimId = requestAnimationFrame(tick); return; }
+        let fa = 0;
+        (function fadeOut(){
+          fxCtx.fillStyle='rgba(5,8,16,0.12)'; fxCtx.fillRect(0,0,W,H);
+          if ((fa+=0.12) < 1) requestAnimationFrame(fadeOut); else fxClear();
+        })();
       }
       fxAnimId = requestAnimationFrame(tick);
     }
 
-    // ── 4. Matrix rain (SALUDAR) ──────────────────────────────────────────────
-    function fxMatrixRain() {
+    // ── 5. Bouncing ball (LANZAR_OBJETO) ─────────────────────────────────────
+    function fxBouncingBall() {
       fxClear();
       const W = fxCanvas.width, H = fxCanvas.height;
-      const FONT_SIZE = 14;
-      const COLS = Math.floor(W / FONT_SIZE);
-      const CHARS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ01ハヒフヘホマミムメモヤユヨラリルレロワヲン'.split('');
-      const drops = Array(COLS).fill(0).map(() => Math.random() * -H / FONT_SIZE);
-      const END_AT = performance.now() + 4000;
+      const EMOJIS = ['🚀','⚽','🎾','🏀','💎','🌟','🔮'];
+      const emoji = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+      const SIZE = Math.min(W, H) * 0.08;
+      let x = SIZE, y = H * 0.5;
+      let vx = 8 + Math.random()*6, vy = -(6+Math.random()*8);
+      const GRAVITY = 0.5, DAMPING = 0.75;
+      const END_AT = performance.now() + 5000;
+      const trail = [];
 
       function tick(now) {
-        // Fade trail
-        fxCtx.fillStyle = 'rgba(5,8,16,0.15)';
-        fxCtx.fillRect(0, 0, W, H);
-
-        fxCtx.font = `${FONT_SIZE}px "JetBrains Mono", monospace`;
-
-        for (let i = 0; i < COLS; i++) {
-          const char = CHARS[Math.floor(Math.random() * CHARS.length)];
-          const y = drops[i] * FONT_SIZE;
-
-          // Head char — bright white
-          if (y > 0) {
-            fxCtx.fillStyle = '#ffffff';
-            fxCtx.shadowColor = '#10b981';
-            fxCtx.shadowBlur = 10;
-            fxCtx.fillText(char, i * FONT_SIZE, y);
-          }
-
-          // Body — emerald
-          const prev = CHARS[Math.floor(Math.random() * CHARS.length)];
-          if (y > FONT_SIZE) {
-            const fade = Math.random();
-            fxCtx.fillStyle = `rgba(16,185,129,${0.4 + fade * 0.5})`;
-            fxCtx.shadowBlur = 4;
-            fxCtx.fillText(prev, i * FONT_SIZE, y - FONT_SIZE);
-          }
-          fxCtx.shadowBlur = 0;
-
-          if (drops[i] * FONT_SIZE > H && Math.random() > 0.975) drops[i] = 0;
-          drops[i] += 0.6 + Math.random() * 0.4;
+        fxCtx.clearRect(0, 0, W, H);
+        // trail
+        trail.push({x, y});
+        if (trail.length > 20) trail.shift();
+        for (let i = 0; i < trail.length; i++) {
+          fxCtx.globalAlpha = (i/trail.length) * 0.3;
+          fxCtx.font = `${SIZE*(i/trail.length)}px serif`;
+          fxCtx.textAlign='center'; fxCtx.textBaseline='middle';
+          fxCtx.fillText(emoji, trail[i].x, trail[i].y);
         }
+        fxCtx.globalAlpha = 1;
+        // main
+        fxCtx.font = `${SIZE}px serif`;
+        fxCtx.shadowColor='#f59e0b'; fxCtx.shadowBlur=20;
+        fxCtx.fillText(emoji, x, y);
+        fxCtx.shadowBlur=0;
+        // impact sparks on bounce
+        vy += GRAVITY;
+        x += vx; y += vy;
+        if (y + SIZE/2 >= H) { y = H - SIZE/2; vy = -Math.abs(vy)*DAMPING; vx *= 0.98; spawnImpact(x,H); }
+        if (y - SIZE/2 <= 0)  { y = SIZE/2;    vy = Math.abs(vy)*DAMPING; }
+        if (x + SIZE/2 >= W)  { x = W-SIZE/2;  vx = -Math.abs(vx)*DAMPING; }
+        if (x - SIZE/2 <= 0)  { x = SIZE/2;    vx = Math.abs(vx)*DAMPING; }
 
-        if (now < END_AT) {
-          fxAnimId = requestAnimationFrame(tick);
+        if (now < END_AT) fxAnimId = requestAnimationFrame(tick);
+        else fxClear();
+      }
+
+      const impactParticles = [];
+      function spawnImpact(ix, iy) {
+        const cols = ['#f59e0b','#fff','#6366f1','#10b981'];
+        impactParticles.push(...spawnBurst(ix, iy, 12, cols, 2, 7, 1, 3, 0.1));
+      }
+
+      function tickAll(now) {
+        fxCtx.clearRect(0, 0, W, H);
+        trail.push({x, y});
+        if (trail.length > 20) trail.shift();
+        for (let i = 0; i < trail.length; i++) {
+          fxCtx.globalAlpha = (i/trail.length)*0.25;
+          fxCtx.font = `${SIZE*0.6*(i/trail.length)}px serif`;
+          fxCtx.textAlign='center'; fxCtx.textBaseline='middle';
+          fxCtx.fillText(emoji, trail[i].x, trail[i].y);
+        }
+        fxCtx.globalAlpha=1;
+        fxCtx.font=`${SIZE}px serif`; fxCtx.shadowColor='#f59e0b'; fxCtx.shadowBlur=24;
+        fxCtx.textAlign='center'; fxCtx.textBaseline='middle';
+        fxCtx.fillText(emoji, x, y); fxCtx.shadowBlur=0;
+        drawParticles(impactParticles);
+        vy+=GRAVITY; x+=vx; y+=vy;
+        if (y+SIZE/2>=H){y=H-SIZE/2;vy=-Math.abs(vy)*DAMPING;vx*=0.98;spawnImpact(x,H);}
+        if (y-SIZE/2<=0){y=SIZE/2;vy=Math.abs(vy)*DAMPING;}
+        if (x+SIZE/2>=W){x=W-SIZE/2;vx=-Math.abs(vx)*DAMPING;spawnImpact(W,y);}
+        if (x-SIZE/2<=0){x=SIZE/2;vx=Math.abs(vx)*DAMPING;spawnImpact(0,y);}
+        if (now<END_AT) fxAnimId=requestAnimationFrame(tickAll); else fxClear();
+      }
+      fxAnimId = requestAnimationFrame(tickAll);
+    }
+
+    // ── 6. Change background (CAMBIAR_FONDO / MODO_CLARO) ────────────────────
+    function fxChangeBg(color, isLight=false) {
+      fxClear();
+      const hex = color.replace('#','');
+      const cr = parseInt(hex.slice(0,2),16)||0;
+      const cg = parseInt(hex.slice(2,4),16)||0;
+      const cb = parseInt(hex.slice(4,6),16)||0;
+      const W = fxCanvas.width, H = fxCanvas.height;
+      const START = performance.now();
+
+      function tick(now) {
+        const t = Math.min(1, (now-START)/600);
+        fxCtx.clearRect(0,0,W,H);
+        // ripple fill that reveals new bg color
+        const r = t * Math.hypot(W, H);
+        fxCtx.beginPath();
+        fxCtx.arc(W/2, H/2, r, 0, Math.PI*2);
+        fxCtx.fillStyle = `rgba(${cr},${cg},${cb},${t*0.6})`;
+        fxCtx.fill();
+        if (t >= 1) {
+          document.body.style.background = color;
+          if (isLight) document.body.style.color = '#1e293b';
+          else document.body.style.color = '';
+          fxClear();
         } else {
-          // Fade out canvas
-          let fadeAlpha = 0;
-          function fadeOut() {
-            fxCtx.fillStyle = `rgba(5,8,16,0.12)`;
-            fxCtx.fillRect(0, 0, W, H);
-            fadeAlpha += 0.12;
-            if (fadeAlpha < 1) requestAnimationFrame(fadeOut);
-            else fxClear();
-          }
-          fadeOut();
+          fxAnimId = requestAnimationFrame(tick);
         }
       }
       fxAnimId = requestAnimationFrame(tick);
+    }
+
+    // ─── Marcar frase como ejecutada en el textarea ───────────────────────────
+    function consumePhrase(phrase) {
+      executedPhrases.add(phrase.toLowerCase().trim());
+      const area = $('final-text');
+      // Reemplaza la frase por versión tachada con marcador visual
+      area.value = area.value.replace(phrase, `[✓ ${phrase}]`);
+      // Aplica estilo gris al textarea brevemente para señalizar
+      area.style.color = '#475569';
+      setTimeout(() => { area.style.color = ''; }, 1200);
     }
 
     // ─── Pipeline principal ────────────────────────────────────────────────────
     async function classify(text) {
       if (!extractor || !text.trim()) return;
+      // Ignorar frases ya ejecutadas
+      if (executedPhrases.has(text.toLowerCase().trim())) return;
 
       const t0 = performance.now();
       const outRaw = await extractor(text, { pooling: 'mean', normalize: true });
@@ -929,6 +957,7 @@
         showResult(bestIntent, bestScore, latency, text);
         const msg = executeAction(bestIntent, text);
         $('result-desc').textContent = `${msg} · confianza ${(bestScore*100).toFixed(1)}% · ${latency}ms`;
+        consumePhrase(text);
       } else {
         $('result-card').classList.remove('hidden');
         $('result-icon').textContent = '❓';
@@ -1034,6 +1063,7 @@
     window.clearTranscript = function() {
       $('final-text').value = '';
       $('interim-text').textContent = '';
+      executedPhrases.clear();
     };
 
     // Clasificar al pulsar Ctrl/Cmd+Enter en el textarea de transcripción
