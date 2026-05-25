@@ -821,7 +821,7 @@
     function fxBouncingBall() {
       fxClear();
       const W = fxCanvas.width, H = fxCanvas.height;
-      const EMOJIS = ['🚀','⚽','🎾','🏀','💎','🌟','🔮'];
+      const EMOJIS = ['🚀','⚽','🎾','🏀','🌟','🔮','🎱','🪃'];
       const emoji = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
       const SIZE = Math.min(W, H) * 0.08;
       let x = SIZE, y = H * 0.5;
@@ -995,8 +995,8 @@
         $('interim-text').textContent = interim ? `⬤ ${interim}` : '';
         if (final) {
           const area = $('final-text');
-          area.value = (area.value ? area.value + ' ' : '') + final.trim();
-          area.scrollTop = area.scrollHeight;
+          area.value = final.trim();
+          executedPhrases.clear();
           $('interim-text').textContent = '';
           classify(final.trim());
         }
