@@ -145,10 +145,21 @@
         </div>
 
         <!-- Live transcript -->
-        <div class="glass rounded-xl p-4 w-full min-h-[80px] space-y-1">
-          <div class="mono text-xs text-slate-600 uppercase tracking-wider mb-2">Transcripción</div>
-          <div id="interim-text" class="text-slate-500 text-sm italic min-h-[20px]"></div>
-          <div id="final-text" class="text-slate-200 text-sm font-medium min-h-[20px]"></div>
+        <div class="glass rounded-xl p-4 w-full space-y-2">
+          <div class="flex items-center justify-between mb-1">
+            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Transcripción</div>
+            <div class="flex gap-2">
+              <button onclick="classifyEdited()" title="Clasificar texto editado" class="mono text-xs px-2 py-0.5 rounded border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition-colors">↵ clasificar</button>
+              <button onclick="clearTranscript()" title="Limpiar transcripción" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ limpiar</button>
+            </div>
+          </div>
+          <textarea
+            id="final-text"
+            rows="4"
+            class="w-full rounded-lg p-3 text-sm mono text-slate-200"
+            placeholder="La transcripción aparecerá aquí — edítala y pulsa ↵ clasificar o Ctrl+Enter..."
+          ></textarea>
+          <div id="interim-text" class="text-slate-500 text-xs italic min-h-[16px] px-1"></div>
         </div>
 
         <!-- Textarea de escritura -->
@@ -607,9 +618,10 @@
           if (e.results[i].isFinal) final += t;
           else interim += t;
         }
-        $('interim-text').textContent = interim;
+        $('interim-text').textContent = interim ? `⬤ ${interim}` : '';
         if (final) {
-          $('final-text').textContent = final;
+          const area = $('final-text');
+          area.value = (area.value ? area.value + ' ' : '') + final.trim();
           $('interim-text').textContent = '';
           classify(final.trim());
         }
@@ -650,14 +662,32 @@
         recognition.stop();
       } else {
         $('interim-text').textContent = '';
-        $('final-text').textContent = '';
         recognition.start();
       }
     };
 
+    window.classifyEdited = function() {
+      const text = $('final-text').value.trim();
+      if (text) classify(text);
+    };
+
+    window.clearTranscript = function() {
+      $('final-text').value = '';
+      $('interim-text').textContent = '';
+    };
+
+    // Clasificar al pulsar Ctrl/Cmd+Enter en el textarea de transcripción
+    $('final-text').addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        window.classifyEdited();
+      }
+    });
+
     // Simular frase desde los chips de ejemplo
     window.simulatePhrase = function(phrase) {
-      $('final-text').textContent = phrase;
+      const area = $('final-text');
+      area.value = phrase;
       $('interim-text').textContent = '';
       classify(phrase.trim());
     };
