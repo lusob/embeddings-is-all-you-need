@@ -229,12 +229,22 @@
           <div id="interim-text" class="text-slate-500 text-xs italic min-h-[16px] px-1"></div>
         </div>
 
+        <!-- Canvas de dibujo -->
+        <div class="glass rounded-xl p-4 w-full space-y-2" style="border-color:rgba(99,102,241,0.2)">
+          <div class="flex items-center justify-between">
+            <div class="mono text-xs text-indigo-400/70 uppercase tracking-wider">Canvas · embedding → forma</div>
+            <button onclick="clearDrawing()" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ limpiar</button>
+          </div>
+          <canvas id="draw-canvas" class="w-full rounded-lg" style="background:rgba(5,8,22,0.8);touch-action:none"></canvas>
+          <div id="draw-hint" class="mono text-xs text-slate-600 italic">Di "dibuja un círculo rojo grande" o "una línea azul fina"…</div>
+        </div>
+
         <!-- Textarea de escritura -->
         <div class="glass glass-cyan rounded-xl p-4 w-full space-y-2">
           <div class="mono text-xs text-cyan-400/70 uppercase tracking-wider">Área de escritura</div>
           <textarea
             id="write-area"
-            rows="5"
+            rows="3"
             class="w-full rounded-lg p-3 text-sm mono"
             placeholder="El texto dictado aparecerá aquí..."
           ></textarea>
@@ -400,18 +410,37 @@
           'abre google y busca',
         ]
       },
+      DIBUJAR: {
+        label: 'DIBUJAR', icon: '🖊️', color: 'purple',
+        refs: [
+          'dibuja', 'dibuja una forma', 'pinta', 'traza',
+          'dibuja un círculo', 'dibuja un cuadrado', 'dibuja un triángulo',
+          'dibuja una línea', 'dibuja una estrella', 'dibuja algo',
+          'crea una forma', 'hazme un dibujo', 'dibuja una figura',
+        ]
+      },
+      BORRAR_DIBUJO: {
+        label: 'BORRAR_DIBUJO', icon: '🗑️', color: 'red',
+        refs: [
+          'borra el dibujo', 'limpia el canvas', 'borra las formas',
+          'limpia el lienzo', 'borra lo dibujado', 'elimina el dibujo',
+          'canvas limpio', 'reset canvas', 'borra todo lo dibujado',
+        ]
+      },
     };
 
     const EXAMPLE_COMMANDS = [
       'hola buenos días',
       'fuegos artificiales',
       'activa matrix',
-      'lanza un cohete',
-      'cambia el fondo a azul',
+      'lanza un objeto',
+      'cambia el fondo a azul marino',
       'modo claro',
       'modo oscuro',
-      'escribe hola mundo',
-      'borra el texto',
+      'dibuja un círculo rojo grande',
+      'dibuja un triángulo pequeño amarillo',
+      'dibuja una línea azul',
+      'borra el dibujo',
       'busca inteligencia artificial',
     ];
 
@@ -430,6 +459,30 @@
     let recognition = null;
     let isListening = false;
     let networkError = false;
+
+    // Vectores semánticos de referencia para mapeo continuo del embedding
+    const drawRefs = {
+      // formas
+      circulo:   null,  // 'un círculo, una esfera, redondo, circular'
+      cuadrado:  null,  // 'un cuadrado, un rectángulo, una caja'
+      triangulo: null,  // 'un triángulo, una pirámide, punta'
+      linea:     null,  // 'una línea, un trazo, una raya'
+      estrella:  null,  // 'una estrella, brillante, destello'
+      // tamaño
+      grande:    null,  // 'grande, enorme, gigante, masivo'
+      pequeño:   null,  // 'pequeño, diminuto, mini, tiny'
+      // brillo / opacidad
+      brillante: null,  // 'brillante, luminoso, vivo, intenso, neón'
+      apagado:   null,  // 'oscuro, apagado, tenue, suave, difuso'
+      // posición
+      arriba:    null,  // 'arriba, alto, superior, encima'
+      abajo:     null,  // 'abajo, bajo, inferior, debajo'
+      izquierda: null,  // 'izquierda, lado izquierdo'
+      derecha:   null,  // 'derecha, lado derecho'
+    };
+
+    // Canvas de dibujo (persistente entre llamadas)
+    let drawCtx = null;
 
     // ─── DOM helpers ───────────────────────────────────────────────────────────
     const $ = id => document.getElementById(id);
@@ -579,7 +632,140 @@
         setTimeout(() => { area.style.boxShadow = ''; }, 600);
         return '🗑️ Texto borrado';
       }
+      if (intent === 'DIBUJAR') {
+        // queryVec se inyecta desde classify() antes de llamar executeAction
+        if (window._lastQueryVec) drawFromEmbedding(window._lastQueryVec, phrase);
+        return '🖊️ Dibujando desde el embedding…';
+      }
+      if (intent === 'BORRAR_DIBUJO') {
+        clearDrawing();
+        return '🗑️ Canvas limpio';
+      }
       return '—';
+    }
+
+    // ─── Draw canvas setup ────────────────────────────────────────────────────
+    function initDrawCanvas() {
+      const canvas = $('draw-canvas');
+      canvas.height = canvas.offsetWidth; // cuadrado
+      drawCtx = canvas.getContext('2d');
+      drawCtx.fillStyle = 'rgba(5,8,22,0)';
+      drawCtx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    window.clearDrawing = function() {
+      if (!drawCtx) return;
+      const c = $('draw-canvas');
+      drawCtx.clearRect(0, 0, c.width, c.height);
+      $('draw-hint').textContent = 'Di "dibuja un círculo rojo grande" o "una línea azul fina"…';
+    };
+
+    // ─── Mapeo embedding → parámetros visuales continuos ─────────────────────
+    function drawFromEmbedding(vec, phrase) {
+      if (!drawCtx || !drawRefs.circulo) return;
+      const c = $('draw-canvas');
+      const W = c.width, H = c.height;
+
+      // 1. FORMA — similitud coseno con cada vector de referencia de forma
+      const shapeScores = {
+        circulo:   cosineSim(vec, drawRefs.circulo),
+        cuadrado:  cosineSim(vec, drawRefs.cuadrado),
+        triangulo: cosineSim(vec, drawRefs.triangulo),
+        linea:     cosineSim(vec, drawRefs.linea),
+        estrella:  cosineSim(vec, drawRefs.estrella),
+      };
+      const shape = Object.entries(shapeScores).sort((a,b) => b[1]-a[1])[0][0];
+
+      // 2. TAMAÑO — posición continua entre 'grande' y 'pequeño'
+      const sGrande  = cosineSim(vec, drawRefs.grande);
+      const sPequeño = cosineSim(vec, drawRefs.pequeño);
+      // normalizado 0..1 (0=muy pequeño, 1=muy grande)
+      const sizeT = (sGrande - sPequeño + 1) / 2;
+      const radius = Math.round(W * (0.06 + sizeT * 0.28));
+
+      // 3. COLOR — proyección directa del vector sobre 3 ejes HSL
+      //    Tomamos componentes espaciadas del embedding (dim 384)
+      //    y las mapeamos a H (0-360), S (40-100%), L (35-75%)
+      const step = Math.floor(vec.length / 3);
+      // cada componente es un promedio de una franja del vector
+      const hRaw = vec.slice(0, step).reduce((s,v) => s+v, 0) / step;
+      const sRaw = vec.slice(step, step*2).reduce((s,v) => s+v, 0) / step;
+      const lRaw = vec.slice(step*2).reduce((s,v) => s+v, 0) / step;
+      // normalizar de [-0.15, 0.15] aprox a [0,1]
+      const norm = x => Math.max(0, Math.min(1, (x + 0.15) / 0.30));
+      const hue  = Math.round(norm(hRaw) * 360);
+      const sat  = Math.round(40 + norm(sRaw) * 60);   // 40-100%
+      const lig  = Math.round(35 + norm(lRaw) * 40);   // 35-75%
+
+      // 4. BRILLO / opacidad
+      const sBrillante = cosineSim(vec, drawRefs.brillante);
+      const sApagado   = cosineSim(vec, drawRefs.apagado);
+      const brightnessT = (sBrillante - sApagado + 1) / 2;
+      const alpha = 0.55 + brightnessT * 0.45;
+      const glow  = Math.round(brightnessT * 30);
+
+      // 5. POSICIÓN — similitud con vectores arriba/abajo/izquierda/derecha
+      const px = (cosineSim(vec, drawRefs.derecha) - cosineSim(vec, drawRefs.izquierda) + 1) / 2;
+      const py = (cosineSim(vec, drawRefs.abajo)   - cosineSim(vec, drawRefs.arriba)    + 1) / 2;
+      const cx = W * (0.15 + px * 0.70);
+      const cy = H * (0.15 + py * 0.70);
+
+      const color = `hsla(${hue},${sat}%,${lig}%,${alpha.toFixed(2)})`;
+      const strokeColor = `hsla(${hue},${sat}%,${Math.min(lig+20,95)}%,${(alpha*0.6).toFixed(2)})`;
+
+      drawCtx.save();
+      drawCtx.shadowColor = `hsl(${hue},${sat}%,${lig}%)`;
+      drawCtx.shadowBlur = glow;
+      drawCtx.fillStyle = color;
+      drawCtx.strokeStyle = strokeColor;
+      drawCtx.lineWidth = Math.max(1.5, radius * 0.06);
+
+      if (shape === 'circulo') {
+        drawCtx.beginPath();
+        drawCtx.arc(cx, cy, radius, 0, Math.PI*2);
+        drawCtx.fill(); drawCtx.stroke();
+
+      } else if (shape === 'cuadrado') {
+        const side = radius * 1.8;
+        drawCtx.beginPath();
+        drawCtx.roundRect(cx - side/2, cy - side/2, side, side, side*0.08);
+        drawCtx.fill(); drawCtx.stroke();
+
+      } else if (shape === 'triangulo') {
+        drawCtx.beginPath();
+        drawCtx.moveTo(cx, cy - radius);
+        drawCtx.lineTo(cx + radius*0.87, cy + radius*0.5);
+        drawCtx.lineTo(cx - radius*0.87, cy + radius*0.5);
+        drawCtx.closePath();
+        drawCtx.fill(); drawCtx.stroke();
+
+      } else if (shape === 'linea') {
+        const len = radius * 3;
+        const angle = hRaw * Math.PI * 4; // ángulo derivado del embedding
+        drawCtx.beginPath();
+        drawCtx.moveTo(cx - Math.cos(angle)*len/2, cy - Math.sin(angle)*len/2);
+        drawCtx.lineTo(cx + Math.cos(angle)*len/2, cy + Math.sin(angle)*len/2);
+        drawCtx.lineWidth = Math.max(2, radius * 0.12);
+        drawCtx.stroke();
+
+      } else if (shape === 'estrella') {
+        const spikes = 5, outerR = radius, innerR = radius * 0.45;
+        drawCtx.beginPath();
+        for (let i = 0; i < spikes*2; i++) {
+          const r = i%2===0 ? outerR : innerR;
+          const a = (i * Math.PI / spikes) - Math.PI/2;
+          i===0 ? drawCtx.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a))
+                : drawCtx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
+        }
+        drawCtx.closePath();
+        drawCtx.fill(); drawCtx.stroke();
+      }
+
+      drawCtx.restore();
+
+      // Actualizar hint con los parámetros derivados
+      $('draw-hint').textContent =
+        `forma: ${shape} · h:${hue}° s:${sat}% l:${lig}% · r:${radius}px · glow:${glow}px · pos:(${Math.round(px*100)}%,${Math.round(py*100)}%)`;
     }
 
     // ─── Visual FX ────────────────────────────────────────────────────────────
@@ -943,6 +1129,8 @@
       const queryVec = Array.from(outRaw.data);
       const latency = Math.round(performance.now() - t0);
 
+      window._lastQueryVec = queryVec; // para drawFromEmbedding
+
       const scores = {};
       let bestIntent = null, bestScore = -Infinity;
       for (const [intent, vecs] of Object.entries(refEmbeddings)) {
@@ -1095,9 +1283,13 @@
       });
 
       setupSpeech();
+      initDrawCanvas();
+      window.addEventListener('resize', initDrawCanvas);
 
       try {
         extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+
+        // Embeddings de intenciones
         for (const [intent, cfg] of Object.entries(INTENTS)) {
           refEmbeddings[intent] = [];
           for (const ref of cfg.refs) {
@@ -1105,6 +1297,28 @@
             refEmbeddings[intent].push(Array.from(out.data));
           }
         }
+
+        // Embeddings de referencia para el mapeo continuo de dibujo
+        const drawRefPhrases = {
+          circulo:   'un círculo una esfera redondo circular bola',
+          cuadrado:  'un cuadrado un rectángulo una caja bloque',
+          triangulo: 'un triángulo una pirámide punta flecha',
+          linea:     'una línea un trazo una raya recta barra',
+          estrella:  'una estrella destellos puntas brillos',
+          grande:    'grande enorme gigante masivo inmenso enorme',
+          pequeño:   'pequeño diminuto mini tiny microscópico',
+          brillante: 'brillante luminoso intenso vivo neón fosforescente',
+          apagado:   'oscuro apagado tenue suave difuso mate',
+          arriba:    'arriba alto superior encima elevado',
+          abajo:     'abajo bajo inferior debajo hundido',
+          izquierda: 'izquierda lado izquierdo oeste',
+          derecha:   'derecha lado derecho este',
+        };
+        for (const [key, phrase] of Object.entries(drawRefPhrases)) {
+          const out = await extractor(phrase, { pooling: 'mean', normalize: true });
+          drawRefs[key] = Array.from(out.data);
+        }
+
         setModelStatus(true);
         $('mic-btn').disabled = false;
         $('mic-label').textContent = 'Pulsa para hablar';
