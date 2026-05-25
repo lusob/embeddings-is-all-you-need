@@ -167,15 +167,9 @@
         <div class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981] animate-pulse"></div>
         <span class="mono text-xs text-slate-400 tracking-widest uppercase">Embeddings is all you need</span>
       </div>
-      <div class="flex items-center gap-4">
-        <div id="model-status" class="flex items-center gap-2">
-          <div id="model-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#f59e0b]"></div>
-          <span id="model-label" class="mono text-xs text-amber-400">MiniLM…</span>
-        </div>
-        <div id="stt-status" class="flex items-center gap-2">
-          <div id="stt-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#f59e0b]"></div>
-          <span id="stt-label" class="mono text-xs text-amber-400">Whisper…</span>
-        </div>
+      <div id="model-status" class="flex items-center gap-2">
+        <div id="model-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#f59e0b]"></div>
+        <span id="model-label" class="mono text-xs text-amber-400">Cargando modelo…</span>
       </div>
     </div>
   </header>
@@ -462,13 +456,9 @@
 
     // ─── Estado global ─────────────────────────────────────────────────────────
     let extractor = null;
-    let transcriber = null;
     let refEmbeddings = {};
+    let recognition = null;
     let isListening = false;
-    let isStopping = false;
-    let mediaRecorder = null;
-    let micStream = null;
-    let chunkQueue = Promise.resolve(); // serializa transcripciones
 
     // ─── DOM helpers ───────────────────────────────────────────────────────────
     const $ = id => document.getElementById(id);
@@ -476,22 +466,12 @@
     function setModelStatus(ready) {
       $('model-dot').className = `w-2 h-2 rounded-full ${ready ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]' : 'bg-amber-400 shadow-[0_0_6px_#f59e0b] animate-pulse'}`;
       $('model-label').className = `mono text-xs ${ready ? 'text-emerald-400' : 'text-amber-400'}`;
-      $('model-label').textContent = ready ? 'MiniLM ✓' : 'MiniLM…';
+      $('model-label').textContent = ready ? 'Modelo listo ✓' : 'Cargando modelo…';
     }
 
     function setSttStatus(state) {
-      // state: 'loading' | 'ready' | 'listening' | 'transcribing' | 'error'
-      const dot = $('stt-dot'), lbl = $('stt-label');
-      const cfg = {
-        loading:      { cls: 'bg-amber-400 shadow-[0_0_6px_#f59e0b] animate-pulse', tcls: 'text-amber-400',  txt: 'Whisper…'        },
-        ready:        { cls: 'bg-emerald-400 shadow-[0_0_6px_#10b981]',              tcls: 'text-emerald-400', txt: 'Whisper ✓'       },
-        listening:    { cls: 'bg-red-400 shadow-[0_0_6px_#ef4444] animate-pulse',    tcls: 'text-red-400',    txt: 'Grabando…'        },
-        transcribing: { cls: 'bg-indigo-400 shadow-[0_0_6px_#6366f1] animate-pulse', tcls: 'text-indigo-400', txt: 'Transcribiendo…'  },
-        error:        { cls: 'bg-red-500',                                            tcls: 'text-red-400',    txt: 'Whisper error'    },
-      }[state] || {};
-      dot.className = `w-2 h-2 rounded-full ${cfg.cls}`;
-      lbl.className = `mono text-xs ${cfg.tcls}`;
-      lbl.textContent = cfg.txt;
+      // solo actualiza el label del mic para estados relevantes
+      if (state === 'error') $('mic-label').textContent = 'STT no disponible';
     }
 
     function cosineSim(a, b) {
@@ -960,109 +940,83 @@
       }
     }
 
-    // ─── Whisper STT (local, sin servidor) ────────────────────────────────────
-    function micStartUI() {
-      isListening = true;
-      $('mic-btn').className = 'mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-danger';
-      $('mic-btn').style.borderColor = 'rgba(239,68,68,0.4)';
-      $('mic-icon').setAttribute('class', 'w-12 h-12 text-red-400');
-      $('listening-ring').classList.remove('hidden');
-      $('mic-label').textContent = 'Escuchando…';
-      $('mic-label').style.color = '#ef4444';
-      $('interim-text').textContent = '⬤ Habla — Whisper transcribe cada 2.5 s…';
-      setSttStatus('listening');
-    }
-
-    function micStopUI() {
-      isListening = false;
-      $('mic-btn').className = 'mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-neon';
-      $('mic-btn').style.borderColor = '';
-      $('mic-icon').setAttribute('class', 'w-12 h-12 text-indigo-400');
-      $('listening-ring').classList.add('hidden');
-      $('mic-label').textContent = 'Pulsa para hablar';
-      $('mic-label').style.color = '';
-      setSttStatus('transcribing');
-    }
-
-    const CHUNK_MS = 2500; // graba en trozos de 2.5 s y transcribe cada uno
-
-    async function transcribeBlob(blob, isFinal) {
-      if (blob.size < 1000) return; // descarta chunks de silencio vacíos
-      const arrayBuffer = await blob.arrayBuffer();
-      const audioCtx = new AudioContext({ sampleRate: 16000 });
-      let audioBuffer;
-      try {
-        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      } catch { return; }
-      const pcm = audioBuffer.getChannelData(0);
-      if (pcm.length < 3200) return; // < 0.2 s de audio real
-
-      let result;
-      try {
-        result = await transcriber(pcm, { language: 'spanish', task: 'transcribe' });
-      } catch (err) {
-        console.error('Whisper chunk error:', err);
+    // ─── Web Speech API ────────────────────────────────────────────────────────
+    function setupSpeech() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        $('mic-label').textContent = 'Usa Chrome/Edge';
+        $('mic-btn').disabled = true;
+        setSttStatus('error');
         return;
       }
-      const text = (result.text || '').trim().replace(/^[\s,.\[\]()]+|[\[\]()]+$/g, '');
-      if (!text) return;
+      recognition = new SR();
+      recognition.lang = 'es-ES';
+      recognition.interimResults = true;
+      recognition.continuous = true;  // sigue escuchando sin parar
+      recognition.maxAlternatives = 1;
 
-      const area = $('final-text');
-      area.value = (area.value ? area.value + ' ' : '') + text;
-      // scroll al final del textarea
-      area.scrollTop = area.scrollHeight;
-      if (isFinal) {
+      recognition.onresult = (e) => {
+        let interim = '', final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript;
+          if (e.results[i].isFinal) final += t;
+          else interim += t;
+        }
+        $('interim-text').textContent = interim ? `⬤ ${interim}` : '';
+        if (final) {
+          const area = $('final-text');
+          area.value = (area.value ? area.value + ' ' : '') + final.trim();
+          area.scrollTop = area.scrollHeight;
+          $('interim-text').textContent = '';
+          classify(final.trim());
+        }
+      };
+
+      recognition.onstart = () => {
+        isListening = true;
+        $('mic-btn').className = 'mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-danger';
+        $('mic-btn').style.borderColor = 'rgba(239,68,68,0.4)';
+        $('mic-icon').setAttribute('class', 'w-12 h-12 text-red-400');
+        $('listening-ring').classList.remove('hidden');
+        $('mic-label').textContent = 'Escuchando…';
+        $('mic-label').style.color = '#ef4444';
+        setSttStatus('listening');
+      };
+
+      recognition.onend = () => {
+        // Si el usuario no ha parado explícitamente, reinicia (continuous mode)
+        if (isListening) { recognition.start(); return; }
+        $('mic-btn').className = 'mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-neon';
+        $('mic-btn').style.borderColor = '';
+        $('mic-icon').setAttribute('class', 'w-12 h-12 text-indigo-400');
+        $('listening-ring').classList.add('hidden');
+        $('mic-label').textContent = 'Pulsa para hablar';
+        $('mic-label').style.color = '';
         $('interim-text').textContent = '';
-        classify(area.value.trim());
-      }
+        setSttStatus('ready');
+      };
+
+      recognition.onerror = (e) => {
+        if (e.error === 'aborted') return; // stop() voluntario
+        console.warn('Speech error:', e.error);
+        if (e.error === 'not-allowed') {
+          isListening = false;
+          $('mic-label').textContent = 'Permiso denegado';
+          setSttStatus('error');
+        }
+        // 'network' u otros: reintentar si sigue activo
+      };
     }
 
-    window.toggleListening = async function() {
-      if (!transcriber) return;
-
-      // Si está grabando, parar
+    window.toggleListening = function() {
+      if (!recognition) return;
       if (isListening) {
-        isStopping = true;
-        mediaRecorder.stop();
-        return;
+        isListening = false;  // flag primero para que onend no reinicie
+        recognition.stop();
+      } else {
+        $('interim-text').textContent = '';
+        recognition.start();
       }
-
-      // Evita doble-arranque mientras se detiene
-      if (isStopping) return;
-
-      try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch {
-        $('mic-label').textContent = 'Permiso de micrófono denegado';
-        return;
-      }
-
-      const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg', 'audio/mp4']
-        .find(m => MediaRecorder.isTypeSupported(m)) || '';
-      mediaRecorder = new MediaRecorder(micStream, mimeType ? { mimeType } : {});
-      chunkQueue = Promise.resolve();
-      let chunkCount = 0;
-
-      mediaRecorder.ondataavailable = e => {
-        if (e.data.size < 100) return;
-        chunkCount++;
-        const isLast = mediaRecorder.state === 'inactive';
-        const blob = new Blob([e.data], { type: e.data.type || mimeType || 'audio/webm' });
-        // Encolar transcripción para que no se solapen
-        chunkQueue = chunkQueue.then(() => transcribeBlob(blob, isLast));
-      };
-
-      mediaRecorder.onstop = () => {
-        micStream.getTracks().forEach(t => t.stop());
-        micStopUI();
-        isStopping = false;
-        // El último chunk lo procesa ondataavailable con isLast=true
-        chunkQueue.then(() => setSttStatus('ready'));
-      };
-
-      micStartUI();
-      // timeslice: emite ondataavailable cada CHUNK_MS ms mientras graba
-      mediaRecorder.start(CHUNK_MS);
     };
 
     window.classifyEdited = function() {
@@ -1103,8 +1057,9 @@
         cmdList.appendChild(chip);
       });
 
-      // Cargar MiniLM + Whisper en paralelo
-      const loadMiniLM = async () => {
+      setupSpeech();
+
+      try {
         extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
         for (const [intent, cfg] of Object.entries(INTENTS)) {
           refEmbeddings[intent] = [];
@@ -1114,26 +1069,12 @@
           }
         }
         setModelStatus(true);
-      };
-
-      const loadWhisper = async () => {
-        transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
-          revision: 'main',
-        });
-        setSttStatus('ready');
         $('mic-btn').disabled = false;
         $('mic-label').textContent = 'Pulsa para hablar';
-      };
-
-      try {
-        await Promise.all([loadMiniLM(), loadWhisper()]);
       } catch (err) {
-        console.error('Error cargando modelos:', err);
-        if (!extractor) {
-          $('model-label').textContent = 'Error MiniLM';
-          $('model-dot').className = 'w-2 h-2 rounded-full bg-red-400';
-        }
-        if (!transcriber) setSttStatus('error');
+        console.error('Error cargando MiniLM:', err);
+        $('model-label').textContent = 'Error MiniLM';
+        $('model-dot').className = 'w-2 h-2 rounded-full bg-red-400';
       }
     }
 
