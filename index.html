@@ -969,7 +969,7 @@
         isListening = true;
         $('mic-btn').className = 'mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-danger';
         $('mic-btn').style.borderColor = 'rgba(239,68,68,0.4)';
-        $('mic-icon').className = 'w-12 h-12 text-red-400';
+        $('mic-icon').setAttribute('class', 'w-12 h-12 text-red-400');
         $('listening-ring').classList.remove('hidden');
         $('mic-label').textContent = 'Escuchando...';
         $('mic-label').style.color = '#ef4444';
@@ -979,7 +979,7 @@
         isListening = false;
         $('mic-btn').className = 'mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-neon';
         $('mic-btn').style.borderColor = '';
-        $('mic-icon').className = 'w-12 h-12 text-indigo-400';
+        $('mic-icon').setAttribute('class', 'w-12 h-12 text-indigo-400');
         $('listening-ring').classList.add('hidden');
         $('mic-label').textContent = 'Pulsa para hablar';
         $('mic-label').style.color = '';
