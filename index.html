@@ -413,6 +413,26 @@
           'abre google y busca',
         ]
       },
+      BUSCAR_VIDEO: {
+        label: 'BUSCAR_VIDEO', icon: '▶️', color: 'red',
+        refs: [
+          'pon un video de', 'busca un video de', 'busca en youtube',
+          'quiero ver', 'ponme un video', 'abre youtube',
+          'muéstrame el video de', 'pon la canción', 'pon música de',
+          'busca el videoclip', 'busca en youtube de', 'ver video',
+          'reproducir video', 'pon en youtube',
+        ]
+      },
+      NAVEGAR: {
+        label: 'NAVEGAR', icon: '🗺️', color: 'cyan',
+        refs: [
+          'cómo llegar a', 'llévame a', 'navega a', 'abre el mapa de',
+          'dónde está', 'busca en el mapa', 'abre google maps',
+          'indicaciones para llegar a', 'ruta hacia', 'dirección de',
+          'ir a', 'localiza', 'encuentra en el mapa', 'localización de',
+          'sitio cerca de', 'cómo voy a',
+        ]
+      },
       AÑADIR_ITEM: {
         label: 'AÑADIR_ITEM', icon: '➕', color: 'emerald',
         refs: [
@@ -453,6 +473,9 @@
       'quita la leche',
       'vacía la lista',
       'busca recetas de pasta',
+      'pon un video de jazz',
+      'cómo llegar a la Sagrada Família',
+      'dónde está el aeropuerto de Madrid',
     ];
 
     const CONFIDENCE_THRESHOLD = 0.35;
@@ -466,7 +489,8 @@
 
     // ─── Estado global ─────────────────────────────────────────────────────────
     let extractor = null;
-    let refEmbeddings = {};
+    let refEmbeddings = {};   // intent → [vec, ...]
+    let catEmbeddings = {};   // _veg/_fruta/... → vec  (para emoji fallback)
     let recognition = null;
     let isListening = false;
     let networkError = false;
@@ -564,6 +588,17 @@
         return strip(['busca en internet','busca en google','busca información sobre',
           'busca información de','busca noticias de','investiga sobre',
           'quiero saber sobre','búsqueda de','abre google y busca','busca','google esto'], p) || p;
+      if (intent === 'BUSCAR_VIDEO')
+        return strip(['pon un video de','busca un video de','busca en youtube de',
+          'busca en youtube','muéstrame el video de','quiero ver','ponme un video de',
+          'ponme un video','busca el videoclip de','busca el videoclip',
+          'pon la canción','pon música de','pon en youtube','reproducir video de',
+          'reproducir video','ver video de','ver video','abre youtube'], p) || p;
+      if (intent === 'NAVEGAR')
+        return strip(['cómo llegar a','llévame a','navega a','abre el mapa de',
+          'dónde está','busca en el mapa','indicaciones para llegar a',
+          'ruta hacia','dirección de','ir a','localiza','encuentra en el mapa',
+          'localización de','sitio cerca de','cómo voy a','abre google maps'], p) || p;
       if (intent === 'CAMBIAR_FONDO')
         return strip(['cambia el fondo a','pon el fondo en','pon el fondo','fondo de color',
           'cambia el fondo','color de fondo'], p) || p;
@@ -599,19 +634,18 @@
       }
       // fallback: el embedding elige entre categorías
       if (!extractor || !window._lastQueryVec) return '🛒';
-      // similitud con categorías semánticas amplias
       const categories = [
-        { em:'🥬', vec: refEmbeddings['_veg']   },
-        { em:'🍎', vec: refEmbeddings['_fruta']  },
-        { em:'🥩', vec: refEmbeddings['_carne']  },
-        { em:'🥛', vec: refEmbeddings['_lacteo'] },
-        { em:'🍞', vec: refEmbeddings['_cereal'] },
-        { em:'🧴', vec: refEmbeddings['_higiene']},
-        { em:'🥤', vec: refEmbeddings['_bebida'] },
-      ].filter(c => c.vec);
+        { em:'🥬', key:'_veg'    },
+        { em:'🍎', key:'_fruta'  },
+        { em:'🥩', key:'_carne'  },
+        { em:'🥛', key:'_lacteo' },
+        { em:'🍞', key:'_cereal' },
+        { em:'🧴', key:'_higiene'},
+        { em:'🥤', key:'_bebida' },
+      ].filter(c => catEmbeddings[c.key]);
       if (!categories.length) return '🛒';
       const best = categories
-        .map(c => ({ em: c.em, s: cosineSim(window._lastQueryVec, c.vec[0]) }))
+        .map(c => ({ em: c.em, s: cosineSim(window._lastQueryVec, catEmbeddings[c.key]) }))
         .sort((a,b) => b.s - a.s)[0];
       return best.s > 0.25 ? best.em : '🛒';
     }
@@ -706,6 +740,16 @@
         const query = param || phrase;
         window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
         return `🔍 Buscando: "${query}"`;
+      }
+      if (intent === 'BUSCAR_VIDEO') {
+        const query = param || phrase;
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
+        return `▶️ YouTube: "${query}"`;
+      }
+      if (intent === 'NAVEGAR') {
+        const query = param || phrase;
+        window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, '_blank');
+        return `🗺️ Maps: "${query}"`;
       }
       if (intent === 'AÑADIR_ITEM') {
         const item = param || phrase;
@@ -1287,7 +1331,7 @@
         };
         for (const [key, phrase] of Object.entries(catPhrases)) {
           const out = await extractor(phrase, { pooling: 'mean', normalize: true });
-          refEmbeddings[key] = [Array.from(out.data)];
+          catEmbeddings[key] = Array.from(out.data);
         }
 
         await restoreCustomActionVecs();
