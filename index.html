@@ -229,25 +229,28 @@
           <div id="interim-text" class="text-slate-500 text-xs italic min-h-[16px] px-1"></div>
         </div>
 
-        <!-- Canvas de dibujo -->
-        <div class="glass rounded-xl p-4 w-full space-y-2" style="border-color:rgba(99,102,241,0.2)">
+        <!-- Lista de la compra -->
+        <div class="glass rounded-xl p-4 w-full space-y-3" style="border-color:rgba(16,185,129,0.2)">
           <div class="flex items-center justify-between">
-            <div class="mono text-xs text-indigo-400/70 uppercase tracking-wider">Canvas · embedding → forma</div>
-            <button onclick="clearDrawing()" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ limpiar</button>
+            <div class="mono text-xs text-emerald-400/70 uppercase tracking-wider">🛒 Lista de la compra</div>
+            <button onclick="clearShoppingList()" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ vaciar</button>
           </div>
-          <canvas id="draw-canvas" class="w-full rounded-lg" style="background:rgba(5,8,22,0.8);touch-action:none"></canvas>
-          <div id="draw-hint" class="mono text-xs text-slate-600 italic">Di "dibuja un círculo rojo grande" o "una línea azul fina"…</div>
+          <ul id="shopping-list" class="space-y-1.5 min-h-[40px]">
+            <li class="mono text-xs text-slate-600 italic" id="shopping-empty">Di "añade leche" o "elimina pan"…</li>
+          </ul>
         </div>
 
-        <!-- Textarea de escritura -->
-        <div class="glass glass-cyan rounded-xl p-4 w-full space-y-2">
-          <div class="mono text-xs text-cyan-400/70 uppercase tracking-wider">Área de escritura</div>
-          <textarea
-            id="write-area"
-            rows="3"
-            class="w-full rounded-lg p-3 text-sm mono"
-            placeholder="El texto dictado aparecerá aquí..."
-          ></textarea>
+        <!-- Custom actions -->
+        <div class="glass rounded-xl p-4 w-full space-y-3" style="border-color:rgba(245,158,11,0.2)">
+          <div class="mono text-xs text-amber-400/70 uppercase tracking-wider">⚡ Acciones personalizadas</div>
+          <div id="custom-actions-list" class="space-y-2"></div>
+          <div class="space-y-2 pt-1 border-t border-slate-700/40">
+            <input id="ca-trigger" type="text" placeholder='Frase disparadora, ej: "pon la música"'
+              class="w-full rounded-lg px-3 py-2 text-xs mono bg-slate-900/60 border border-slate-700/50 text-slate-300 focus:border-amber-500/40 outline-none"/>
+            <input id="ca-url" type="text" placeholder="URL a llamar (GET), ej: http://192.168.1.1/on"
+              class="w-full rounded-lg px-3 py-2 text-xs mono bg-slate-900/60 border border-slate-700/50 text-slate-300 focus:border-amber-500/40 outline-none"/>
+            <button onclick="addCustomAction()" class="w-full py-1.5 rounded-lg border border-amber-500/30 text-amber-400 text-xs mono hover:bg-amber-500/10 transition-colors">+ Añadir acción</button>
+          </div>
         </div>
 
       </div>
@@ -271,12 +274,10 @@
           </div>
         </div>
 
-        <!-- Confidence bar -->
-        <div class="glass rounded-xl p-4 space-y-3">
-          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Similitud coseno por intención</div>
-          <div id="bars-container" class="space-y-2">
-            <div class="text-slate-600 text-xs mono italic">Esperando primer comando...</div>
-          </div>
+        <!-- Example commands -->
+        <div class="glass rounded-xl p-5 space-y-4">
+          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Comandos de ejemplo — clica para simular</div>
+          <div class="flex flex-wrap gap-2" id="cmd-list"></div>
         </div>
 
         <!-- Result card -->
@@ -290,10 +291,12 @@
           </div>
         </div>
 
-        <!-- Example commands -->
-        <div class="glass rounded-xl p-5 space-y-4">
-          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Comandos de ejemplo — clica para simular</div>
-          <div class="flex flex-wrap gap-2" id="cmd-list"></div>
+        <!-- Confidence bars -->
+        <div class="glass rounded-xl p-4 space-y-3">
+          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Similitud coseno por intención</div>
+          <div id="bars-container" class="space-y-2">
+            <div class="text-slate-600 text-xs mono italic">Esperando primer comando...</div>
+          </div>
         </div>
 
         <!-- Pipeline explainer -->
@@ -410,21 +413,28 @@
           'abre google y busca',
         ]
       },
-      DIBUJAR: {
-        label: 'DIBUJAR', icon: '🖊️', color: 'purple',
+      AÑADIR_ITEM: {
+        label: 'AÑADIR_ITEM', icon: '➕', color: 'emerald',
         refs: [
-          'dibuja', 'dibuja una forma', 'pinta', 'traza',
-          'dibuja un círculo', 'dibuja un cuadrado', 'dibuja un triángulo',
-          'dibuja una línea', 'dibuja una estrella', 'dibuja algo',
-          'crea una forma', 'hazme un dibujo', 'dibuja una figura',
+          'añade a la lista', 'agrega a la lista', 'pon en la lista',
+          'necesito comprar', 'apunta', 'añade', 'agrega', 'compra',
+          'falta', 'me falta', 'ponme', 'mete en la cesta',
         ]
       },
-      BORRAR_DIBUJO: {
-        label: 'BORRAR_DIBUJO', icon: '🗑️', color: 'red',
+      QUITAR_ITEM: {
+        label: 'QUITAR_ITEM', icon: '✅', color: 'cyan',
         refs: [
-          'borra el dibujo', 'limpia el canvas', 'borra las formas',
-          'limpia el lienzo', 'borra lo dibujado', 'elimina el dibujo',
-          'canvas limpio', 'reset canvas', 'borra todo lo dibujado',
+          'ya tengo', 'quita de la lista', 'elimina de la lista', 'borra de la lista',
+          'tacha', 'ya compré', 'quita', 'elimina', 'borra el producto',
+          'lo tengo', 'ya está', 'marca como comprado',
+        ]
+      },
+      VACIAR_LISTA: {
+        label: 'VACIAR_LISTA', icon: '🗑️', color: 'red',
+        refs: [
+          'vacía la lista', 'borra la lista', 'limpia la lista',
+          'lista vacía', 'borra todo de la lista', 'elimina la lista',
+          'reset lista', 'empieza una lista nueva',
         ]
       },
     };
@@ -437,11 +447,12 @@
       'cambia el fondo a azul marino',
       'modo claro',
       'modo oscuro',
-      'dibuja un círculo rojo grande',
-      'dibuja un triángulo pequeño amarillo',
-      'dibuja una línea azul',
-      'borra el dibujo',
-      'busca inteligencia artificial',
+      'añade leche a la lista',
+      'agrega pan',
+      'necesito comprar huevos',
+      'quita la leche',
+      'vacía la lista',
+      'busca recetas de pasta',
     ];
 
     const CONFIDENCE_THRESHOLD = 0.35;
@@ -460,29 +471,11 @@
     let isListening = false;
     let networkError = false;
 
-    // Vectores semánticos de referencia para mapeo continuo del embedding
-    const drawRefs = {
-      // formas
-      circulo:   null,  // 'un círculo, una esfera, redondo, circular'
-      cuadrado:  null,  // 'un cuadrado, un rectángulo, una caja'
-      triangulo: null,  // 'un triángulo, una pirámide, punta'
-      linea:     null,  // 'una línea, un trazo, una raya'
-      estrella:  null,  // 'una estrella, brillante, destello'
-      // tamaño
-      grande:    null,  // 'grande, enorme, gigante, masivo'
-      pequeño:   null,  // 'pequeño, diminuto, mini, tiny'
-      // brillo / opacidad
-      brillante: null,  // 'brillante, luminoso, vivo, intenso, neón'
-      apagado:   null,  // 'oscuro, apagado, tenue, suave, difuso'
-      // posición
-      arriba:    null,  // 'arriba, alto, superior, encima'
-      abajo:     null,  // 'abajo, bajo, inferior, debajo'
-      izquierda: null,  // 'izquierda, lado izquierdo'
-      derecha:   null,  // 'derecha, lado derecho'
-    };
+    // Lista de la compra: [{text, emoji}]
+    let shoppingList = JSON.parse(localStorage.getItem('shopping') || '[]');
 
-    // Canvas de dibujo (persistente entre llamadas)
-    let drawCtx = null;
+    // Custom actions: [{trigger, url, vec}]  vec se calcula al añadir
+    let customActions = JSON.parse(localStorage.getItem('customActions') || '[]');
 
     // ─── DOM helpers ───────────────────────────────────────────────────────────
     const $ = id => document.getElementById(id);
@@ -571,201 +564,185 @@
         return strip(['busca en internet','busca en google','busca información sobre',
           'busca información de','busca noticias de','investiga sobre',
           'quiero saber sobre','búsqueda de','abre google y busca','busca','google esto'], p) || p;
-      if (intent === 'ESCRIBIR_TEXTO')
-        return strip(['escribe aquí','toma nota de','anota','escribe esto','agrega al texto',
-          'inserta el texto','escribe'], p) || p;
       if (intent === 'CAMBIAR_FONDO')
         return strip(['cambia el fondo a','pon el fondo en','pon el fondo','fondo de color',
           'cambia el fondo','color de fondo'], p) || p;
+      if (intent === 'AÑADIR_ITEM')
+        return strip(['añade a la lista','agrega a la lista','pon en la lista',
+          'necesito comprar','mete en la cesta','ponme','añade','agrega','compra',
+          'me falta','falta','apunta'], p) || p;
+      if (intent === 'QUITAR_ITEM')
+        return strip(['ya tengo','quita de la lista','elimina de la lista','borra de la lista',
+          'tacha','ya compré','marca como comprado','quita','elimina','borra',
+          'lo tengo','ya está'], p) || p;
       return '';
+    }
+
+    // ─── Lista de la compra ────────────────────────────────────────────────────
+    // Mapa producto → emoji (el embedding lo decidirá para items desconocidos)
+    const PRODUCT_EMOJIS = {
+      leche:'🥛', pan:'🍞', huevo:'🥚', huevos:'🥚', queso:'🧀', mantequilla:'🧈',
+      yogur:'🍦', nata:'🍶', tomate:'🍅', tomates:'🍅', patata:'🥔', patatas:'🥔',
+      cebolla:'🧅', ajo:'🧄', zanahoria:'🥕', lechuga:'🥬', pepino:'🥒',
+      manzana:'🍎', naranja:'🍊', plátano:'🍌', fresa:'🍓', uva:'🍇', limón:'🍋',
+      pollo:'🍗', carne:'🥩', pescado:'🐟', salmón:'🐟', atún:'🐟', jamón:'🥓',
+      pasta:'🍝', arroz:'🍚', cereal:'🌾', galleta:'🍪', galletas:'🍪',
+      café:'☕', té:'🍵', zumo:'🧃', agua:'💧', cerveza:'🍺', vino:'🍷',
+      aceite:'🫙', sal:'🧂', azúcar:'🍬', chocolate:'🍫', miel:'🍯',
+      jabón:'🧼', champú:'🧴', papel:'🧻', detergente:'🫧',
+    };
+
+    function emojiForItem(text) {
+      const p = text.toLowerCase();
+      for (const [key, em] of Object.entries(PRODUCT_EMOJIS)) {
+        if (p.includes(key)) return em;
+      }
+      // fallback: el embedding elige entre categorías
+      if (!extractor || !window._lastQueryVec) return '🛒';
+      // similitud con categorías semánticas amplias
+      const categories = [
+        { em:'🥬', vec: refEmbeddings['_veg']   },
+        { em:'🍎', vec: refEmbeddings['_fruta']  },
+        { em:'🥩', vec: refEmbeddings['_carne']  },
+        { em:'🥛', vec: refEmbeddings['_lacteo'] },
+        { em:'🍞', vec: refEmbeddings['_cereal'] },
+        { em:'🧴', vec: refEmbeddings['_higiene']},
+        { em:'🥤', vec: refEmbeddings['_bebida'] },
+      ].filter(c => c.vec);
+      if (!categories.length) return '🛒';
+      const best = categories
+        .map(c => ({ em: c.em, s: cosineSim(window._lastQueryVec, c.vec[0]) }))
+        .sort((a,b) => b.s - a.s)[0];
+      return best.s > 0.25 ? best.em : '🛒';
+    }
+
+    function renderShoppingList() {
+      const ul = $('shopping-list');
+      $('shopping-empty').style.display = shoppingList.length ? 'none' : '';
+      // elimina items previos (no el empty placeholder)
+      ul.querySelectorAll('li.shop-item').forEach(el => el.remove());
+      shoppingList.forEach((item, i) => {
+        const li = document.createElement('li');
+        li.className = 'shop-item flex items-center gap-2 group animate-slide-up';
+        li.innerHTML = `
+          <span class="text-lg leading-none">${item.emoji}</span>
+          <span class="flex-1 text-sm text-slate-200">${item.text}</span>
+          <button onclick="removeShoppingItem(${i})"
+            class="opacity-0 group-hover:opacity-100 transition-opacity mono text-xs text-slate-500 hover:text-red-400 px-1">✕</button>`;
+        ul.appendChild(li);
+      });
+      localStorage.setItem('shopping', JSON.stringify(shoppingList));
+    }
+
+    window.removeShoppingItem = function(i) {
+      shoppingList.splice(i, 1);
+      renderShoppingList();
+    };
+
+    window.clearShoppingList = function() {
+      shoppingList = [];
+      renderShoppingList();
+    };
+
+    // ─── Custom actions ────────────────────────────────────────────────────────
+    function renderCustomActions() {
+      const container = $('custom-actions-list');
+      container.innerHTML = '';
+      customActions.forEach((ca, i) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2 glass rounded-lg px-3 py-2';
+        div.style.borderColor = 'rgba(245,158,11,0.15)';
+        div.innerHTML = `
+          <span class="flex-1 mono text-xs text-slate-300 truncate">⚡ <strong>${ca.trigger}</strong></span>
+          <span class="mono text-xs text-slate-600 truncate max-w-[120px]">${ca.url}</span>
+          <button onclick="removeCustomAction(${i})" class="mono text-xs text-slate-600 hover:text-red-400 transition-colors">✕</button>`;
+        container.appendChild(div);
+      });
+      localStorage.setItem('customActions', JSON.stringify(customActions.map(c => ({trigger:c.trigger,url:c.url}))));
+    }
+
+    window.addCustomAction = async function() {
+      const trigger = $('ca-trigger').value.trim();
+      const url     = $('ca-url').value.trim();
+      if (!trigger || !url || !extractor) return;
+      const out = await extractor(trigger, { pooling:'mean', normalize:true });
+      customActions.push({ trigger, url, vec: Array.from(out.data) });
+      $('ca-trigger').value = '';
+      $('ca-url').value = '';
+      renderCustomActions();
+    };
+
+    window.removeCustomAction = function(i) {
+      customActions.splice(i, 1);
+      renderCustomActions();
+    };
+
+    // Restaurar vecs de custom actions tras recargar (re-embed los triggers)
+    async function restoreCustomActionVecs() {
+      for (const ca of customActions) {
+        if (!ca.vec && extractor) {
+          const out = await extractor(ca.trigger, { pooling:'mean', normalize:true });
+          ca.vec = Array.from(out.data);
+        }
+      }
     }
 
     // ─── Ejecución de acciones ────────────────────────────────────────────────
     function executeAction(intent, phrase) {
       const param = extractParam(phrase, intent);
 
-      if (intent === 'SALUDAR') {
-        fxWavingHand();
-        return '¡Hola! 👋';
-      }
-      if (intent === 'FUEGOS_ARTIFICIALES') {
-        fxFireworks();
-        return '🎆 ¡Fuegos artificiales!';
-      }
-      if (intent === 'MATRIX') {
-        fxMatrixRain();
-        return '🟩 Entrando en The Matrix…';
-      }
-      if (intent === 'LANZAR_OBJETO') {
-        fxBouncingBall();
-        return '🚀 ¡Objeto lanzado!';
-      }
+      if (intent === 'SALUDAR') { fxWavingHand(); return '¡Hola! 👋'; }
+      if (intent === 'FUEGOS_ARTIFICIALES') { fxFireworks(); return '🎆 ¡Fuegos artificiales!'; }
+      if (intent === 'MATRIX') { fxMatrixRain(); return '🟩 Entrando en The Matrix…'; }
+      if (intent === 'LANZAR_OBJETO') { fxBouncingBall(); return '🚀 ¡Objeto lanzado!'; }
       if (intent === 'CAMBIAR_FONDO') {
         const color = extractColor(phrase) || '#1e1b4b';
         fxChangeBg(color);
         return `🎨 Fondo → ${color}`;
       }
-      if (intent === 'MODO_CLARO') {
-        fxChangeBg('#f8fafc', true);
-        return '☀️ Modo claro';
-      }
-      if (intent === 'MODO_OSCURO') {
-        fxTvShutoff();
-        return '🌙 Modo oscuro + glitch';
-      }
+      if (intent === 'MODO_CLARO') { fxChangeBg('#f8fafc', true); return '☀️ Modo claro'; }
+      if (intent === 'MODO_OSCURO') { fxTvShutoff(); return '🌙 Modo oscuro + glitch'; }
       if (intent === 'BUSCAR_INTERNET') {
         const query = param || phrase;
         window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
         return `🔍 Buscando: "${query}"`;
       }
-      if (intent === 'ESCRIBIR_TEXTO') {
-        const area = $('write-area');
-        area.value += (area.value ? '\n' : '') + param;
-        area.style.boxShadow = '0 0 0 2px #a855f766';
-        setTimeout(() => { area.style.boxShadow = ''; }, 800);
-        return `✍️ Escrito: "${param}"`;
+      if (intent === 'AÑADIR_ITEM') {
+        const item = param || phrase;
+        const emoji = emojiForItem(item);
+        shoppingList.push({ text: item, emoji });
+        renderShoppingList();
+        return `➕ Añadido: ${emoji} ${item}`;
       }
-      if (intent === 'BORRAR_TEXTO') {
-        const area = $('write-area');
-        area.value = '';
-        area.style.boxShadow = '0 0 0 2px #ef444466';
-        setTimeout(() => { area.style.boxShadow = ''; }, 600);
-        return '🗑️ Texto borrado';
+      if (intent === 'QUITAR_ITEM') {
+        const target = param || phrase;
+        const idx = shoppingList.findIndex(i =>
+          i.text.toLowerCase().includes(target.toLowerCase()) ||
+          target.toLowerCase().includes(i.text.toLowerCase())
+        );
+        if (idx !== -1) {
+          const removed = shoppingList.splice(idx, 1)[0];
+          renderShoppingList();
+          return `✅ Quitado: ${removed.emoji} ${removed.text}`;
+        }
+        return `❓ No encontré "${target}" en la lista`;
       }
-      if (intent === 'DIBUJAR') {
-        // queryVec se inyecta desde classify() antes de llamar executeAction
-        if (window._lastQueryVec) drawFromEmbedding(window._lastQueryVec, phrase);
-        return '🖊️ Dibujando desde el embedding…';
+      if (intent === 'VACIAR_LISTA') {
+        clearShoppingList();
+        return '🗑️ Lista vaciada';
       }
-      if (intent === 'BORRAR_DIBUJO') {
-        clearDrawing();
-        return '🗑️ Canvas limpio';
+      // ─ Custom action: busca la más similar al vec actual
+      if (window._lastQueryVec && customActions.length) {
+        const best = customActions
+          .filter(ca => ca.vec)
+          .map(ca => ({ ca, s: cosineSim(window._lastQueryVec, ca.vec) }))
+          .sort((a,b) => b.s - a.s)[0];
+        if (best && best.s > 0.65) {
+          fetch(best.ca.url, { mode:'no-cors' }).catch(() => {});
+          return `⚡ "${best.ca.trigger}" → ${best.ca.url}`;
+        }
       }
       return '—';
-    }
-
-    // ─── Draw canvas setup ────────────────────────────────────────────────────
-    function initDrawCanvas() {
-      const canvas = $('draw-canvas');
-      canvas.height = canvas.offsetWidth; // cuadrado
-      drawCtx = canvas.getContext('2d');
-      drawCtx.fillStyle = 'rgba(5,8,22,0)';
-      drawCtx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    window.clearDrawing = function() {
-      if (!drawCtx) return;
-      const c = $('draw-canvas');
-      drawCtx.clearRect(0, 0, c.width, c.height);
-      $('draw-hint').textContent = 'Di "dibuja un círculo rojo grande" o "una línea azul fina"…';
-    };
-
-    // ─── Mapeo embedding → parámetros visuales continuos ─────────────────────
-    function drawFromEmbedding(vec, phrase) {
-      if (!drawCtx || !drawRefs.circulo) return;
-      const c = $('draw-canvas');
-      const W = c.width, H = c.height;
-
-      // 1. FORMA — similitud coseno con cada vector de referencia de forma
-      const shapeScores = {
-        circulo:   cosineSim(vec, drawRefs.circulo),
-        cuadrado:  cosineSim(vec, drawRefs.cuadrado),
-        triangulo: cosineSim(vec, drawRefs.triangulo),
-        linea:     cosineSim(vec, drawRefs.linea),
-        estrella:  cosineSim(vec, drawRefs.estrella),
-      };
-      const shape = Object.entries(shapeScores).sort((a,b) => b[1]-a[1])[0][0];
-
-      // 2. TAMAÑO — posición continua entre 'grande' y 'pequeño'
-      const sGrande  = cosineSim(vec, drawRefs.grande);
-      const sPequeño = cosineSim(vec, drawRefs.pequeño);
-      // normalizado 0..1 (0=muy pequeño, 1=muy grande)
-      const sizeT = (sGrande - sPequeño + 1) / 2;
-      const radius = Math.round(W * (0.06 + sizeT * 0.28));
-
-      // 3. COLOR — proyección directa del vector sobre 3 ejes HSL
-      //    Tomamos componentes espaciadas del embedding (dim 384)
-      //    y las mapeamos a H (0-360), S (40-100%), L (35-75%)
-      const step = Math.floor(vec.length / 3);
-      // cada componente es un promedio de una franja del vector
-      const hRaw = vec.slice(0, step).reduce((s,v) => s+v, 0) / step;
-      const sRaw = vec.slice(step, step*2).reduce((s,v) => s+v, 0) / step;
-      const lRaw = vec.slice(step*2).reduce((s,v) => s+v, 0) / step;
-      // normalizar de [-0.15, 0.15] aprox a [0,1]
-      const norm = x => Math.max(0, Math.min(1, (x + 0.15) / 0.30));
-      const hue  = Math.round(norm(hRaw) * 360);
-      const sat  = Math.round(40 + norm(sRaw) * 60);   // 40-100%
-      const lig  = Math.round(35 + norm(lRaw) * 40);   // 35-75%
-
-      // 4. BRILLO / opacidad
-      const sBrillante = cosineSim(vec, drawRefs.brillante);
-      const sApagado   = cosineSim(vec, drawRefs.apagado);
-      const brightnessT = (sBrillante - sApagado + 1) / 2;
-      const alpha = 0.55 + brightnessT * 0.45;
-      const glow  = Math.round(brightnessT * 30);
-
-      // 5. POSICIÓN — similitud con vectores arriba/abajo/izquierda/derecha
-      const px = (cosineSim(vec, drawRefs.derecha) - cosineSim(vec, drawRefs.izquierda) + 1) / 2;
-      const py = (cosineSim(vec, drawRefs.abajo)   - cosineSim(vec, drawRefs.arriba)    + 1) / 2;
-      const cx = W * (0.15 + px * 0.70);
-      const cy = H * (0.15 + py * 0.70);
-
-      const color = `hsla(${hue},${sat}%,${lig}%,${alpha.toFixed(2)})`;
-      const strokeColor = `hsla(${hue},${sat}%,${Math.min(lig+20,95)}%,${(alpha*0.6).toFixed(2)})`;
-
-      drawCtx.save();
-      drawCtx.shadowColor = `hsl(${hue},${sat}%,${lig}%)`;
-      drawCtx.shadowBlur = glow;
-      drawCtx.fillStyle = color;
-      drawCtx.strokeStyle = strokeColor;
-      drawCtx.lineWidth = Math.max(1.5, radius * 0.06);
-
-      if (shape === 'circulo') {
-        drawCtx.beginPath();
-        drawCtx.arc(cx, cy, radius, 0, Math.PI*2);
-        drawCtx.fill(); drawCtx.stroke();
-
-      } else if (shape === 'cuadrado') {
-        const side = radius * 1.8;
-        drawCtx.beginPath();
-        drawCtx.roundRect(cx - side/2, cy - side/2, side, side, side*0.08);
-        drawCtx.fill(); drawCtx.stroke();
-
-      } else if (shape === 'triangulo') {
-        drawCtx.beginPath();
-        drawCtx.moveTo(cx, cy - radius);
-        drawCtx.lineTo(cx + radius*0.87, cy + radius*0.5);
-        drawCtx.lineTo(cx - radius*0.87, cy + radius*0.5);
-        drawCtx.closePath();
-        drawCtx.fill(); drawCtx.stroke();
-
-      } else if (shape === 'linea') {
-        const len = radius * 3;
-        const angle = hRaw * Math.PI * 4; // ángulo derivado del embedding
-        drawCtx.beginPath();
-        drawCtx.moveTo(cx - Math.cos(angle)*len/2, cy - Math.sin(angle)*len/2);
-        drawCtx.lineTo(cx + Math.cos(angle)*len/2, cy + Math.sin(angle)*len/2);
-        drawCtx.lineWidth = Math.max(2, radius * 0.12);
-        drawCtx.stroke();
-
-      } else if (shape === 'estrella') {
-        const spikes = 5, outerR = radius, innerR = radius * 0.45;
-        drawCtx.beginPath();
-        for (let i = 0; i < spikes*2; i++) {
-          const r = i%2===0 ? outerR : innerR;
-          const a = (i * Math.PI / spikes) - Math.PI/2;
-          i===0 ? drawCtx.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a))
-                : drawCtx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
-        }
-        drawCtx.closePath();
-        drawCtx.fill(); drawCtx.stroke();
-      }
-
-      drawCtx.restore();
-
-      // Actualizar hint con los parámetros derivados
-      $('draw-hint').textContent =
-        `forma: ${shape} · h:${hue}° s:${sat}% l:${lig}% · r:${radius}px · glow:${glow}px · pos:(${Math.round(px*100)}%,${Math.round(py*100)}%)`;
     }
 
     // ─── Visual FX ────────────────────────────────────────────────────────────
@@ -1129,7 +1106,7 @@
       const queryVec = Array.from(outRaw.data);
       const latency = Math.round(performance.now() - t0);
 
-      window._lastQueryVec = queryVec; // para drawFromEmbedding
+      window._lastQueryVec = queryVec;
 
       const scores = {};
       let bestIntent = null, bestScore = -Infinity;
@@ -1283,8 +1260,8 @@
       });
 
       setupSpeech();
-      initDrawCanvas();
-      window.addEventListener('resize', initDrawCanvas);
+      renderShoppingList();
+      renderCustomActions();
 
       try {
         extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
@@ -1298,26 +1275,22 @@
           }
         }
 
-        // Embeddings de referencia para el mapeo continuo de dibujo
-        const drawRefPhrases = {
-          circulo:   'un círculo una esfera redondo circular bola',
-          cuadrado:  'un cuadrado un rectángulo una caja bloque',
-          triangulo: 'un triángulo una pirámide punta flecha',
-          linea:     'una línea un trazo una raya recta barra',
-          estrella:  'una estrella destellos puntas brillos',
-          grande:    'grande enorme gigante masivo inmenso enorme',
-          pequeño:   'pequeño diminuto mini tiny microscópico',
-          brillante: 'brillante luminoso intenso vivo neón fosforescente',
-          apagado:   'oscuro apagado tenue suave difuso mate',
-          arriba:    'arriba alto superior encima elevado',
-          abajo:     'abajo bajo inferior debajo hundido',
-          izquierda: 'izquierda lado izquierdo oeste',
-          derecha:   'derecha lado derecho este',
+        // Embeddings de categorías para emoji fallback en lista de compra
+        const catPhrases = {
+          '_veg':    'verdura vegetal lechuga espinaca brócoli pepino',
+          '_fruta':  'fruta manzana naranja plátano pera uva fresa',
+          '_carne':  'carne pollo pescado proteína jamón salmón',
+          '_lacteo': 'lácteo leche yogur queso mantequilla nata',
+          '_cereal': 'cereal pan pasta arroz harina galleta',
+          '_higiene':'higiene jabón champú papel higiénico detergente',
+          '_bebida': 'bebida agua zumo refresco cerveza vino café',
         };
-        for (const [key, phrase] of Object.entries(drawRefPhrases)) {
+        for (const [key, phrase] of Object.entries(catPhrases)) {
           const out = await extractor(phrase, { pooling: 'mean', normalize: true });
-          drawRefs[key] = Array.from(out.data);
+          refEmbeddings[key] = [Array.from(out.data)];
         }
+
+        await restoreCustomActionVecs();
 
         setModelStatus(true);
         $('mic-btn').disabled = false;
