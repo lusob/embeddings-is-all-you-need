@@ -459,6 +459,7 @@
     let refEmbeddings = {};
     let recognition = null;
     let isListening = false;
+    let networkError = false;
 
     // ─── DOM helpers ───────────────────────────────────────────────────────────
     const $ = id => document.getElementById(id);
@@ -984,8 +985,10 @@
       };
 
       recognition.onend = () => {
-        // Si el usuario no ha parado explícitamente, reinicia (continuous mode)
-        if (isListening) { recognition.start(); return; }
+        // Reinicia solo si el usuario no paró y no hubo error de red
+        if (isListening && !networkError) { recognition.start(); return; }
+        isListening = false;
+        networkError = false;
         $('mic-btn').className = 'mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-neon';
         $('mic-btn').style.borderColor = '';
         $('mic-icon').setAttribute('class', 'w-12 h-12 text-indigo-400');
@@ -993,18 +996,22 @@
         $('mic-label').textContent = 'Pulsa para hablar';
         $('mic-label').style.color = '';
         $('interim-text').textContent = '';
-        setSttStatus('ready');
       };
 
       recognition.onerror = (e) => {
-        if (e.error === 'aborted') return; // stop() voluntario
+        if (e.error === 'aborted') return;
         console.warn('Speech error:', e.error);
-        if (e.error === 'not-allowed') {
+        if (e.error === 'network') {
+          networkError = true;
           isListening = false;
-          $('mic-label').textContent = 'Permiso denegado';
-          setSttStatus('error');
+          $('mic-label').textContent = '⚠ Sin acceso a Google Speech';
+          $('mic-label').style.color = '#f59e0b';
+          $('interim-text').textContent = 'Desactiva el bloqueador de anuncios o usa otro perfil de Chrome';
+        } else if (e.error === 'not-allowed') {
+          isListening = false;
+          $('mic-label').textContent = '⚠ Permiso de micrófono denegado';
+          $('mic-label').style.color = '#ef4444';
         }
-        // 'network' u otros: reintentar si sigue activo
       };
     }
 
