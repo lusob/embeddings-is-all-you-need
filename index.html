@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -163,13 +163,18 @@
   <!-- Loading overlay -->
   <div id="loading-overlay" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center gap-6"
        style="background:rgba(5,8,16,0.97);backdrop-filter:blur(8px)">
-    <div class="text-center space-y-1">
-      <div class="mono text-xs text-slate-500 uppercase tracking-widest">Inicializando</div>
+    <div class="text-center space-y-2">
+      <div class="mono text-xs text-slate-500 uppercase tracking-widest">Initialising</div>
       <div class="text-2xl font-bold neon-text-indigo mono">Embeddings is all you need</div>
+      <div class="flex items-center justify-center gap-2 mt-1">
+        <span class="px-2 py-0.5 rounded text-xs mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">No LLM</span>
+        <span class="px-2 py-0.5 rounded text-xs mono bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">Embedding model only</span>
+        <span class="px-2 py-0.5 rounded text-xs mono bg-slate-700/50 border border-slate-600/30 text-slate-400">100% offline</span>
+      </div>
     </div>
-    <div class="w-72 space-y-2">
+    <div class="w-80 space-y-2">
       <div class="flex justify-between mono text-xs text-slate-500">
-        <span id="loading-step">Descargando modelo de embeddings MiniLM…</span>
+        <span id="loading-step">Downloading MiniLM embedding model…</span>
         <span id="loading-pct">0%</span>
       </div>
       <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
@@ -194,7 +199,7 @@
       </div>
       <div id="model-status" class="flex items-center gap-2">
         <div id="model-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#f59e0b]"></div>
-        <span id="model-label" class="mono text-xs text-amber-400">Cargando modelo de embeddings…</span>
+        <span id="model-label" class="mono text-xs text-amber-400">Loading embedding model…</span>
       </div>
     </div>
   </header>
@@ -202,15 +207,16 @@
   <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
 
     <!-- Hero title -->
-    <div class="text-center space-y-2 animate-fade-in">
+    <div class="text-center space-y-3 animate-fade-in">
       <h1 class="text-4xl md:text-5xl font-bold tracking-tight">
-        <span class="neon-text-indigo">Voz</span>
+        <span class="neon-text-indigo">Voice</span>
         <span class="text-slate-500 mx-2">→</span>
         <span class="text-slate-300">Embedding</span>
         <span class="text-slate-500 mx-2">→</span>
-        <span class="neon-text-emerald">Acción</span>
+        <span class="neon-text-emerald">Action</span>
       </h1>
-      <p class="text-slate-500 text-sm mono">100% local · sin servidor · &lt; 50 ms tras warm-up</p>
+      <p class="text-slate-500 text-sm mono">100% in-browser · no server · no LLM · &lt; 50 ms after warm-up</p>
+      <p class="text-slate-600 text-xs mono max-w-lg mx-auto">Intent classification using a tiny <span class="text-indigo-400">embedding model</span> (MiniLM-L6-v2, 23 MB, WASM) — cosine similarity, not a language model</p>
     </div>
 
     <!-- Main grid -->
@@ -226,7 +232,7 @@
             onclick="toggleListening()"
             disabled
             class="mic-btn relative w-28 h-28 rounded-full glass flex items-center justify-center animate-pulse-neon opacity-40 cursor-not-allowed"
-            title="Cargando modelo de embeddings…"
+            title="Loading embedding model…"
           >
             <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 text-indigo-400">
               <path d="M8.25 4.5a3.75 3.75 0 117.5 0v8.25a3.75 3.75 0 11-7.5 0V4.5z"/>
@@ -234,43 +240,43 @@
             </svg>
             <div id="listening-ring" class="hidden absolute inset-0 rounded-full border-2 border-red-500/60 animate-ping"></div>
           </button>
-          <div id="mic-label" class="mono text-xs text-slate-500 tracking-wider uppercase">Pulsa para hablar</div>
+          <div id="mic-label" class="mono text-xs text-slate-500 tracking-wider uppercase">Click to speak</div>
         </div>
 
         <!-- Live transcript -->
         <div class="glass rounded-xl p-4 w-full space-y-2">
           <div class="flex items-center justify-between mb-1">
-            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Transcripción</div>
+            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Transcript</div>
             <div class="flex gap-2">
-              <button onclick="classifyEdited()" title="Clasificar texto editado" class="mono text-xs px-2 py-0.5 rounded border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition-colors">↵ clasificar</button>
-              <button onclick="clearTranscript()" title="Limpiar transcripción" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ limpiar</button>
+              <button onclick="classifyEdited()" title="Classify edited text" class="mono text-xs px-2 py-0.5 rounded border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition-colors">↵ classify</button>
+              <button onclick="clearTranscript()" title="Clear transcript" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ clear</button>
             </div>
           </div>
           <textarea
             id="final-text"
             rows="4"
             class="w-full rounded-lg p-3 text-sm mono text-slate-200"
-            placeholder="La transcripción aparecerá aquí — edítala y pulsa ↵ clasificar o Ctrl+Enter..."
+            placeholder="Transcript appears here — edit and press ↵ classify or Ctrl+Enter…"
           ></textarea>
           <div id="interim-text" class="text-slate-500 text-xs italic min-h-[16px] px-1"></div>
         </div>
 
-        <!-- Lista de la compra -->
+        <!-- Shopping list -->
         <div class="glass rounded-xl p-4 w-full space-y-3" style="border-color:rgba(16,185,129,0.2)">
           <div class="flex items-center justify-between">
-            <div class="mono text-xs text-emerald-400/70 uppercase tracking-wider">🛒 Lista de la compra</div>
-            <button onclick="clearShoppingList()" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ vaciar</button>
+            <div class="mono text-xs text-emerald-400/70 uppercase tracking-wider">🛒 Shopping list</div>
+            <button onclick="clearShoppingList()" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ clear</button>
           </div>
           <ul id="shopping-list" class="space-y-1.5 min-h-[40px]">
-            <li class="mono text-xs text-slate-600 italic" id="shopping-empty">Di "añade leche" o "elimina pan"…</li>
+            <li class="mono text-xs text-slate-600 italic" id="shopping-empty">Say "add milk" or "remove bread"…</li>
           </ul>
         </div>
 
-        <!-- Temporizador -->
+        <!-- Timer -->
         <div id="timer-panel" class="glass rounded-xl p-4 w-full space-y-3 hidden" style="border-color:rgba(245,158,11,0.2)">
           <div class="flex items-center justify-between">
-            <div class="mono text-xs text-amber-400/70 uppercase tracking-wider">⏱️ Temporizador</div>
-            <button onclick="cancelTimer()" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ cancelar</button>
+            <div class="mono text-xs text-amber-400/70 uppercase tracking-wider">⏱️ Timer</div>
+            <button onclick="cancelTimer()" class="mono text-xs px-2 py-0.5 rounded border border-slate-600/40 text-slate-500 hover:bg-slate-700/30 transition-colors">✕ cancel</button>
           </div>
           <div class="flex items-center gap-4">
             <div class="relative w-16 h-16 flex-shrink-0">
@@ -293,14 +299,14 @@
 
         <!-- Custom actions -->
         <div class="glass rounded-xl p-4 w-full space-y-3" style="border-color:rgba(245,158,11,0.2)">
-          <div class="mono text-xs text-amber-400/70 uppercase tracking-wider">⚡ Acciones personalizadas</div>
+          <div class="mono text-xs text-amber-400/70 uppercase tracking-wider">⚡ Custom actions</div>
           <div id="custom-actions-list" class="space-y-2"></div>
           <div class="space-y-2 pt-1 border-t border-slate-700/40">
-            <input id="ca-trigger" type="text" placeholder='Frase disparadora, ej: "pon la música"'
+            <input id="ca-trigger" type="text" placeholder='Trigger phrase, e.g. "play music"'
               class="w-full rounded-lg px-3 py-2 text-xs mono bg-slate-900/60 border border-slate-700/50 text-slate-300 focus:border-amber-500/40 outline-none"/>
-            <input id="ca-url" type="text" placeholder="URL a llamar (GET), ej: http://192.168.1.1/on"
+            <input id="ca-url" type="text" placeholder="GET URL — use {phrase} for dynamic text, e.g. http://api/search?q={phrase}"
               class="w-full rounded-lg px-3 py-2 text-xs mono bg-slate-900/60 border border-slate-700/50 text-slate-300 focus:border-amber-500/40 outline-none"/>
-            <button onclick="addCustomAction()" class="w-full py-1.5 rounded-lg border border-amber-500/30 text-amber-400 text-xs mono hover:bg-amber-500/10 transition-colors">+ Añadir acción</button>
+            <button onclick="addCustomAction()" class="w-full py-1.5 rounded-lg border border-amber-500/30 text-amber-400 text-xs mono hover:bg-amber-500/10 transition-colors">+ Add action</button>
           </div>
         </div>
 
@@ -312,22 +318,22 @@
         <!-- Stats row -->
         <div class="grid grid-cols-3 gap-4 animate-fade-in">
           <div class="glass rounded-xl p-4 text-center space-y-1">
-            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Intención</div>
+            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Intent</div>
             <div id="stat-intent" class="font-bold text-base neon-text-indigo mono truncate">—</div>
           </div>
           <div class="glass glass-amber rounded-xl p-4 text-center space-y-1">
-            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Confianza</div>
+            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Confidence</div>
             <div id="stat-conf" class="font-bold text-2xl neon-text-amber mono">—</div>
           </div>
           <div class="glass glass-emerald rounded-xl p-4 text-center space-y-1">
-            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Latencia</div>
+            <div class="mono text-xs text-slate-600 uppercase tracking-wider">Latency</div>
             <div id="stat-lat" class="font-bold text-2xl neon-text-emerald mono">—</div>
           </div>
         </div>
 
         <!-- Example commands -->
         <div class="glass rounded-xl p-5 space-y-4">
-          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Comandos de ejemplo — clica para simular</div>
+          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Example commands — click to simulate</div>
           <div class="flex flex-wrap gap-2" id="cmd-list"></div>
         </div>
 
@@ -342,27 +348,35 @@
           </div>
         </div>
 
+        <!-- Embedding visualiser -->
+        <div class="glass rounded-xl p-4 space-y-3">
+          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Embedding pipeline — live</div>
+          <div id="embed-viz" class="space-y-2">
+            <div class="text-slate-600 text-xs mono italic">Waiting for first command…</div>
+          </div>
+        </div>
+
         <!-- Confidence bars -->
         <div class="glass rounded-xl p-4 space-y-3">
-          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Similitud coseno por intención</div>
+          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Cosine similarity per intent</div>
           <div id="bars-container" class="space-y-2">
-            <div class="text-slate-600 text-xs mono italic">Esperando primer comando...</div>
+            <div class="text-slate-600 text-xs mono italic">Waiting for first command…</div>
           </div>
         </div>
 
         <!-- Pipeline explainer -->
         <div class="glass rounded-xl p-5 space-y-3">
-          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Pipeline local</div>
+          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Local pipeline · no server · no LLM</div>
           <div class="flex items-center gap-2 flex-wrap text-xs mono text-slate-400">
             <span class="px-2 py-1 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">Web Speech API</span>
             <span class="text-slate-600">→</span>
-            <span class="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300">Transcripción</span>
+            <span class="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300">Transcript</span>
             <span class="text-slate-600">→</span>
-            <span class="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">MiniLM Embedding (WASM)</span>
+            <span class="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">MiniLM embedding (WASM)</span>
             <span class="text-slate-600">→</span>
-            <span class="px-2 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">Cosine Similarity</span>
+            <span class="px-2 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">Cosine similarity</span>
             <span class="text-slate-600">→</span>
-            <span class="px-2 py-1 rounded bg-purple-500/10 border border-purple-500/20 text-purple-300">Acción DOM</span>
+            <span class="px-2 py-1 rounded bg-purple-500/10 border border-purple-500/20 text-purple-300">DOM action</span>
           </div>
         </div>
 
@@ -380,150 +394,128 @@
 
     // ─── Intenciones y frases de referencia ───────────────────────────────────
     const INTENTS = {
-      SALUDAR: {
-        label: 'SALUDAR', icon: '👋', color: 'pink',
+      GREET: {
+        label: 'GREET', icon: '👋', color: 'pink',
         refs: [
-          'hola', 'buenos días', 'buenas tardes', 'buenas noches',
-          'qué tal', 'cómo estás', 'hey', 'saludos', 'hola amigo', 'qué hay',
-          'hi', 'hello', 'good morning',
+          'hello', 'hi', 'good morning', 'good afternoon', 'good evening',
+          'hey', 'greetings', 'what\'s up', 'howdy', 'hey there',
+          'hola', 'buenos días', 'buenas',
         ]
       },
-      FUEGOS_ARTIFICIALES: {
-        label: 'FUEGOS_ARTIFICIALES', icon: '🎆', color: 'amber',
+      FIREWORKS: {
+        label: 'FIREWORKS', icon: '🎆', color: 'amber',
         refs: [
-          'lanza fuegos artificiales', 'fuegos artificiales', 'explosión de colores',
-          'celebra', 'celebración', 'fiesta', 'party', 'explota', 'explosión',
-          'fuegos', 'cohetes', 'petardos', 'confetti', 'festeja',
+          'launch fireworks', 'fireworks', 'explosion of colours',
+          'celebrate', 'celebration', 'party', 'explode', 'confetti',
+          'shoot fireworks', 'let\'s celebrate', 'boom', 'festivity',
         ]
       },
       MATRIX: {
         label: 'MATRIX', icon: '🟩', color: 'emerald',
         refs: [
-          'muéstrame the matrix', 'activa matrix', 'código matrix',
-          'lluvia de código', 'lluvia verde', 'código verde', 'efecto matrix',
-          'modo hacker', 'hack', 'hacker', 'código binario',
+          'show me the matrix', 'activate matrix', 'matrix code',
+          'code rain', 'green rain', 'green code', 'matrix effect',
+          'hacker mode', 'hack', 'hacker', 'binary code',
           'follow the white rabbit', 'take the red pill',
         ]
       },
-      LANZAR_OBJETO: {
-        label: 'LANZAR_OBJETO', icon: '🚀', color: 'cyan',
+      LAUNCH_OBJECT: {
+        label: 'LAUNCH_OBJECT', icon: '🚀', color: 'cyan',
         refs: [
-          'lanza un cohete', 'lanza una pelota', 'lanza algo',
-          'anima algo', 'mueve algo', 'pon algo en movimiento',
-          'manda algo volando', 'tira algo', 'dispara algo',
-          'rebota algo', 'animación física', 'física',
+          'launch a rocket', 'throw a ball', 'throw something',
+          'animate something', 'move something', 'set something in motion',
+          'send something flying', 'shoot something', 'bounce something',
+          'physics animation', 'toss an object', 'fling something',
         ]
       },
-      CAMBIAR_FONDO: {
-        label: 'CAMBIAR_FONDO', icon: '🎨', color: 'purple',
+      CHANGE_BACKGROUND: {
+        label: 'CHANGE_BACKGROUND', icon: '🎨', color: 'purple',
         refs: [
-          'cambia el fondo', 'pon el fondo', 'fondo de color',
-          'cambia el fondo a', 'pon el fondo en', 'color de fondo',
-          'fondo rojo', 'fondo azul', 'fondo verde', 'fondo morado',
-          'fondo oscuro', 'fondo claro', 'background',
+          'change the background', 'set the background', 'background colour',
+          'change background to', 'set background to', 'background color',
+          'red background', 'blue background', 'green background', 'purple background',
+          'dark background', 'light background', 'change the bg',
         ]
       },
-      MODO_CLARO: {
-        label: 'MODO_CLARO', icon: '☀️', color: 'amber',
+      LIGHT_MODE: {
+        label: 'LIGHT_MODE', icon: '☀️', color: 'amber',
         refs: [
-          'enciende la luz', 'modo claro', 'modo día', 'fondo blanco',
-          'aclara la pantalla', 'light mode', 'pon claro',
-          'más luz', 'ilumina', 'luz on',
+          'turn on the light', 'light mode', 'day mode', 'white background',
+          'brighten the screen', 'light theme', 'make it light',
+          'more light', 'illuminate', 'light on',
         ]
       },
-      MODO_OSCURO: {
-        label: 'MODO_OSCURO', icon: '🌙', color: 'indigo',
+      DARK_MODE: {
+        label: 'DARK_MODE', icon: '🌙', color: 'indigo',
         refs: [
-          'apaga la luz', 'modo oscuro', 'modo noche', 'fondo negro',
-          'oscurece la pantalla', 'dark mode', 'pon oscuro',
-          'menos luz', 'apaga', 'luz off',
+          'turn off the light', 'dark mode', 'night mode', 'black background',
+          'darken the screen', 'dark theme', 'make it dark',
+          'less light', 'lights off', 'night theme',
         ]
       },
-      ESCRIBIR_TEXTO: {
-        label: 'ESCRIBIR_TEXTO', icon: '✍️', color: 'cyan',
+      SEARCH: {
+        label: 'SEARCH', icon: '🔍', color: 'indigo',
         refs: [
-          'escribe', 'anota', 'escribe esto', 'pon en el texto',
-          'inserta el texto', 'agrega al texto', 'dicta', 'escribe aquí',
-          'toma nota', 'apunta',
+          'search the web', 'google this', 'search for', 'look up',
+          'find information about', 'search online', 'search news about',
+          'research', 'I want to know about', 'open google and search',
+          'show me a video of', 'search youtube', 'play a video of',
+          'how to get to', 'directions to', 'where is', 'navigate to',
+          'find on the map', 'route to',
         ]
       },
-      BORRAR_TEXTO: {
-        label: 'BORRAR_TEXTO', icon: '🗑️', color: 'red',
+      ADD_ITEM: {
+        label: 'ADD_ITEM', icon: '➕', color: 'emerald',
         refs: [
-          'borra el texto', 'limpia', 'borra todo', 'elimina el texto',
-          'borra lo escrito', 'limpia el área', 'vacía', 'clear', 'reset texto',
-          'borra las notas',
+          'add to the list', 'put on the list', 'I need to buy',
+          'add', 'buy', 'get', 'pick up', 'grab', 'we need',
+          'don\'t forget', 'put in the cart', 'shopping list add',
         ]
       },
-      BUSCAR_INTERNET: {
-        label: 'BUSCAR_INTERNET', icon: '🔍', color: 'indigo',
+      REMOVE_ITEM: {
+        label: 'REMOVE_ITEM', icon: '✅', color: 'cyan',
         refs: [
-          'busca en internet', 'busca en google', 'busca información sobre',
-          'google esto', 'encuentra en la web', 'busca noticias de',
-          'investiga sobre', 'quiero saber sobre', 'búsqueda de',
-          'abre google y busca',
-          'pon un video de', 'busca un video de', 'quiero ver un video de',
-          'muéstrame el video de', 'pon la canción', 'pon música de',
-          'busca el videoclip de', 'busca en youtube',
-          'cómo llegar a', 'llévame a', 'navega a',
-          'dónde está', 'indicaciones para llegar a', 'ruta hacia',
-          'dirección de', 'localiza en el mapa', 'cerca de',
+          'I already have', 'remove from list', 'delete from list', 'cross off',
+          'got it', 'already bought', 'remove', 'delete', 'mark as bought',
+          'take off the list', 'scratch that', 'done with',
         ]
       },
-      AÑADIR_ITEM: {
-        label: 'AÑADIR_ITEM', icon: '➕', color: 'emerald',
+      CLEAR_LIST: {
+        label: 'CLEAR_LIST', icon: '🗑️', color: 'red',
         refs: [
-          'añade a la lista', 'agrega a la lista', 'pon en la lista',
-          'necesito comprar', 'apunta', 'añade', 'agrega', 'compra',
-          'falta', 'me falta', 'ponme', 'mete en la cesta',
+          'clear the list', 'empty the list', 'wipe the list',
+          'list is empty', 'delete all items', 'reset the list',
+          'start a new list', 'clear shopping list',
         ]
       },
-      QUITAR_ITEM: {
-        label: 'QUITAR_ITEM', icon: '✅', color: 'cyan',
+      TIMER: {
+        label: 'TIMER', icon: '⏱️', color: 'amber',
         refs: [
-          'ya tengo', 'quita de la lista', 'elimina de la lista', 'borra de la lista',
-          'tacha', 'ya compré', 'quita', 'elimina', 'borra el producto',
-          'lo tengo', 'ya está', 'marca como comprado',
-        ]
-      },
-      VACIAR_LISTA: {
-        label: 'VACIAR_LISTA', icon: '🗑️', color: 'red',
-        refs: [
-          'vacía la lista', 'borra la lista', 'limpia la lista',
-          'lista vacía', 'borra todo de la lista', 'elimina la lista',
-          'reset lista', 'empieza una lista nueva',
-        ]
-      },
-      TEMPORIZADOR: {
-        label: 'TEMPORIZADOR', icon: '⏱️', color: 'amber',
-        refs: [
-          'pon un temporizador de', 'pon un timer de', 'cuenta atrás de',
-          'avísame en', 'alarma en', 'despertador en',
-          'ponme un temporizador', 'pon un cronómetro', 'cuenta regresiva',
-          'recuérdame en', 'en cinco minutos', 'en diez minutos',
-          'temporizador', 'timer', 'alarma para',
+          'set a timer for', 'set a timer', 'countdown',
+          'remind me in', 'alarm in', 'wake me in',
+          'timer for', 'set timer', 'start countdown',
+          'alert me in', 'in five minutes', 'in ten minutes',
+          'timer', 'alarm', 'stopwatch',
         ]
       },
     };
 
     const EXAMPLE_COMMANDS = [
-      'hola buenos días',
-      'fuegos artificiales',
-      'activa matrix',
-      'lanza un objeto',
-      'cambia el fondo a azul marino',
-      'modo claro',
-      'modo oscuro',
-      'añade leche a la lista',
-      'agrega pan',
-      'necesito comprar huevos',
-      'quita la leche',
-      'vacía la lista',
-      'busca recetas de pasta',
-      'pon un video de jazz',
-      'cómo llegar a la Sagrada Família',
-      'pon un temporizador de 30 segundos',
-      'avísame en 2 minutos',
+      'hello there',
+      'launch fireworks',
+      'activate matrix',
+      'throw a ball',
+      'change background to deep blue',
+      'dark mode',
+      'light mode',
+      'search for pasta recipes',
+      'how to get to the Eiffel Tower',
+      'set a timer for 30 seconds',
+      'remind me in 2 minutes',
+      'add milk to the list',
+      'add eggs',
+      'remove the milk',
+      'clear the list',
     ];
 
     const CONFIDENCE_THRESHOLD = 0.35;
@@ -555,18 +547,85 @@
     function setModelStatus(ready) {
       $('model-dot').className = `w-2 h-2 rounded-full ${ready ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]' : 'bg-amber-400 shadow-[0_0_6px_#f59e0b] animate-pulse'}`;
       $('model-label').className = `mono text-xs ${ready ? 'text-emerald-400' : 'text-amber-400'}`;
-      $('model-label').textContent = ready ? 'Modelo de embeddings listo ✓' : 'Cargando modelo de embeddings…';
+      $('model-label').textContent = ready ? 'Embedding model ready ✓' : 'Loading embedding model…';
     }
 
     function setSttStatus(state) {
-      // solo actualiza el label del mic para estados relevantes
-      if (state === 'error') $('mic-label').textContent = 'STT no disponible';
+      if (state === 'error') $('mic-label').textContent = 'STT unavailable';
     }
 
     function cosineSim(a, b) {
       let dot = 0, na = 0, nb = 0;
       for (let i = 0; i < a.length; i++) { dot += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i]; }
       return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-9);
+    }
+
+    // ─── Embedding pipeline visualiser ────────────────────────────────────────
+    function animateEmbedViz(text, scores, bestIntent) {
+      const viz = $('embed-viz');
+      viz.innerHTML = '';
+
+      // Phase 1: tokenise — show chars streaming in
+      const tokenDiv = document.createElement('div');
+      tokenDiv.className = 'flex flex-wrap gap-1 items-center min-h-[24px]';
+      viz.appendChild(tokenDiv);
+
+      const words = text.trim().split(/\s+/);
+      let wi = 0;
+      const tokenInterval = setInterval(() => {
+        if (wi >= words.length) {
+          clearInterval(tokenInterval);
+          showVecPhase();
+          return;
+        }
+        const chip = document.createElement('span');
+        chip.className = 'px-1.5 py-0.5 rounded text-xs mono bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 animate-fade-in';
+        chip.textContent = words[wi++];
+        tokenDiv.appendChild(chip);
+      }, 120);
+
+      // Phase 2: vec dot pulses + arrow → intent bars light up
+      function showVecPhase() {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2 mt-2';
+
+        const vecDot = document.createElement('div');
+        vecDot.className = 'w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse flex-shrink-0';
+        row.appendChild(vecDot);
+
+        const arrow = document.createElement('span');
+        arrow.className = 'text-slate-600 text-xs mono';
+        arrow.textContent = '→ cosine →';
+        row.appendChild(arrow);
+
+        const barsWrap = document.createElement('div');
+        barsWrap.className = 'flex-1 space-y-1';
+        row.appendChild(barsWrap);
+        viz.appendChild(row);
+
+        // Sort top-5 intents
+        const top5 = Object.entries(scores).sort((a,b) => b[1]-a[1]).slice(0,5);
+        top5.forEach(([intent, score], i) => {
+          const cfg = INTENTS[intent];
+          const pct = Math.max(0, Math.min(100, score * 100));
+          const color = COLOR_MAP[cfg?.color] || '#6366f1';
+          const isBest = intent === bestIntent && score >= CONFIDENCE_THRESHOLD;
+          const bar = document.createElement('div');
+          bar.className = 'flex items-center gap-1.5';
+          bar.innerHTML = `
+            <span class="mono text-xs w-4 text-center">${cfg?.icon || '·'}</span>
+            <div class="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full rounded-full progress-bar" style="width:0%;background:${color};box-shadow:0 0 4px ${color}88;transition-delay:${i*80}ms"></div>
+            </div>
+            ${isBest ? `<span class="mono text-xs" style="color:${color}">✓</span>` : '<span class="w-3"></span>'}`;
+          barsWrap.appendChild(bar);
+          // Trigger width after paint
+          requestAnimationFrame(() => {
+            const fill = bar.querySelector('.progress-bar');
+            if (fill) fill.style.width = pct + '%';
+          });
+        });
+      }
     }
 
     function renderBars(scores) {
@@ -606,15 +665,17 @@
       $('result-icon').textContent = cfg.icon;
       $('result-title').textContent = intent;
       $('result-title').style.color = color;
-      $('result-desc').textContent = `"${phrase}" · confianza ${(score*100).toFixed(1)}% · ${latency}ms`;
+      $('result-desc').textContent = `"${phrase}" · confidence ${(score*100).toFixed(1)}% · ${latency}ms`;
       card.classList.remove('hidden');
     }
 
     // ─── Extracción de parámetro ──────────────────────────────────────────────
     const CSS_COLORS = {
-      rojo: '#ef4444', verde: '#10b981', azul: '#3b82f6', amarillo: '#f59e0b',
-      morado: '#a855f7', rosa: '#ec4899', naranja: '#f97316', cyan: '#06b6d4',
-      blanco: '#f1f5f9', negro: '#020617', turquesa: '#14b8a6', lima: '#84cc16',
+      red: '#ef4444', green: '#10b981', blue: '#3b82f6', yellow: '#f59e0b',
+      purple: '#a855f7', pink: '#ec4899', orange: '#f97316', cyan: '#06b6d4',
+      white: '#f1f5f9', black: '#020617', teal: '#14b8a6', lime: '#84cc16',
+      navy: '#1e3a5f', indigo: '#4f46e5', violet: '#7c3aed', coral: '#f87171',
+      'deep blue': '#1e1b4b', 'dark blue': '#1e1b4b',
     };
 
     function extractColor(text) {
@@ -632,48 +693,45 @@
         }
         return str;
       };
-      if (intent === 'BUSCAR_INTERNET')
-        return strip(['busca en internet','busca en google','busca información sobre',
-          'busca información de','busca noticias de','investiga sobre',
-          'quiero saber sobre','búsqueda de','abre google y busca',
-          'pon un video de','busca un video de','muéstrame el video de',
-          'quiero ver un video de','pon la canción','pon música de',
-          'busca el videoclip de','busca en youtube',
-          'cómo llegar a','llévame a','navega a','dónde está',
-          'indicaciones para llegar a','ruta hacia','dirección de',
-          'localiza en el mapa','cerca de',
-          'busca','google esto'], p) || p;
-      if (intent === 'TEMPORIZADOR')
-        return strip(['pon un temporizador de','pon un timer de','cuenta atrás de',
-          'avísame en','alarma en','despertador en','recuérdame en',
-          'ponme un temporizador de','ponme un temporizador',
-          'cuenta regresiva de','alarma para','timer de','temporizador de'], p) || p;
-      if (intent === 'CAMBIAR_FONDO')
-        return strip(['cambia el fondo a','pon el fondo en','pon el fondo','fondo de color',
-          'cambia el fondo','color de fondo'], p) || p;
-      if (intent === 'AÑADIR_ITEM')
-        return strip(['añade a la lista','agrega a la lista','pon en la lista',
-          'necesito comprar','mete en la cesta','ponme','añade','agrega','compra',
-          'me falta','falta','apunta'], p) || p;
-      if (intent === 'QUITAR_ITEM')
-        return strip(['ya tengo','quita de la lista','elimina de la lista','borra de la lista',
-          'tacha','ya compré','marca como comprado','quita','elimina','borra',
-          'lo tengo','ya está'], p) || p;
+      if (intent === 'SEARCH')
+        return strip(['search the web for','search online for','search for','google this',
+          'look up','find information about','search news about','research',
+          'i want to know about','open google and search','find on web',
+          'show me a video of','search youtube for','play a video of',
+          'how to get to','directions to','where is','navigate to',
+          'find on the map','route to','search'], p) || p;
+      if (intent === 'TIMER')
+        return strip(['set a timer for','set timer for','countdown of',
+          'remind me in','alarm in','wake me in','alert me in',
+          'timer for','start countdown of','in'], p) || p;
+      if (intent === 'CHANGE_BACKGROUND')
+        return strip(['change the background to','set the background to','change background to',
+          'set background to','background colour','background color',
+          'change the background','change the bg'], p) || p;
+      if (intent === 'ADD_ITEM')
+        return strip(['add to the list','put on the list','i need to buy',
+          'put in the cart','shopping list add','don\'t forget',
+          'add','buy','get','grab','pick up','we need'], p) || p;
+      if (intent === 'REMOVE_ITEM')
+        return strip(['remove from list','delete from list','cross off',
+          'take off the list','mark as bought','i already have',
+          'already bought','done with','remove','delete','scratch that'], p) || p;
       return '';
     }
 
     // ─── Lista de la compra ────────────────────────────────────────────────────
     // Mapa producto → emoji (el embedding lo decidirá para items desconocidos)
     const PRODUCT_EMOJIS = {
-      leche:'🥛', pan:'🍞', huevo:'🥚', huevos:'🥚', queso:'🧀', mantequilla:'🧈',
-      yogur:'🍦', nata:'🍶', tomate:'🍅', tomates:'🍅', patata:'🥔', patatas:'🥔',
-      cebolla:'🧅', ajo:'🧄', zanahoria:'🥕', lechuga:'🥬', pepino:'🥒',
-      manzana:'🍎', naranja:'🍊', plátano:'🍌', fresa:'🍓', uva:'🍇', limón:'🍋',
-      pollo:'🍗', carne:'🥩', pescado:'🐟', salmón:'🐟', atún:'🐟', jamón:'🥓',
-      pasta:'🍝', arroz:'🍚', cereal:'🌾', galleta:'🍪', galletas:'🍪',
-      café:'☕', té:'🍵', zumo:'🧃', agua:'💧', cerveza:'🍺', vino:'🍷',
-      aceite:'🫙', sal:'🧂', azúcar:'🍬', chocolate:'🍫', miel:'🍯',
-      jabón:'🧼', champú:'🧴', papel:'🧻', detergente:'🫧',
+      milk:'🥛', bread:'🍞', egg:'🥚', eggs:'🥚', cheese:'🧀', butter:'🧈',
+      yogurt:'🍦', yoghurt:'🍦', cream:'🍶', tomato:'🍅', tomatoes:'🍅',
+      potato:'🥔', potatoes:'🥔', onion:'🧅', garlic:'🧄', carrot:'🥕',
+      lettuce:'🥬', cucumber:'🥒', apple:'🍎', orange:'🍊', banana:'🍌',
+      strawberry:'🍓', grapes:'🍇', lemon:'🍋', chicken:'🍗', meat:'🥩',
+      fish:'🐟', salmon:'🐟', tuna:'🐟', ham:'🥓', bacon:'🥓',
+      pasta:'🍝', rice:'🍚', cereal:'🌾', cookie:'🍪', cookies:'🍪',
+      coffee:'☕', tea:'🍵', juice:'🧃', water:'💧', beer:'🍺', wine:'🍷',
+      oil:'🫙', salt:'🧂', sugar:'🍬', chocolate:'🍫', honey:'🍯',
+      soap:'🧼', shampoo:'🧴', toilet:'🧻', detergent:'🫧', paper:'🧻',
     };
 
     function emojiForItem(text) {
@@ -702,7 +760,7 @@
     function renderShoppingList() {
       const ul = $('shopping-list');
       $('shopping-empty').style.display = shoppingList.length ? 'none' : '';
-      // elimina items previos (no el empty placeholder)
+      // remove previous items (keep empty placeholder)
       ul.querySelectorAll('li.shop-item').forEach(el => el.remove());
       shoppingList.forEach((item, i) => {
         const li = document.createElement('li');
@@ -802,35 +860,35 @@
     function executeAction(intent, phrase) {
       const param = extractParam(phrase, intent);
 
-      if (intent === 'SALUDAR') { fxWavingHand(); return '¡Hola! 👋'; }
-      if (intent === 'FUEGOS_ARTIFICIALES') { fxFireworks(); return '🎆 ¡Fuegos artificiales!'; }
-      if (intent === 'MATRIX') { fxMatrixRain(); return '🟩 Entrando en The Matrix…'; }
-      if (intent === 'LANZAR_OBJETO') { fxBouncingBall(); return '🚀 ¡Objeto lanzado!'; }
-      if (intent === 'CAMBIAR_FONDO') {
+      if (intent === 'GREET') { fxWavingHand(); return 'Hello! 👋'; }
+      if (intent === 'FIREWORKS') { fxFireworks(); return '🎆 Fireworks!'; }
+      if (intent === 'MATRIX') { fxMatrixRain(); return '🟩 Entering The Matrix…'; }
+      if (intent === 'LAUNCH_OBJECT') { fxBouncingBall(); return '🚀 Object launched!'; }
+      if (intent === 'CHANGE_BACKGROUND') {
         const color = extractColor(phrase) || '#1e1b4b';
         fxChangeBg(color);
-        return `🎨 Fondo → ${color}`;
+        return `🎨 Background → ${color}`;
       }
-      if (intent === 'MODO_CLARO') { fxChangeBg('#f8fafc', true); return '☀️ Modo claro'; }
-      if (intent === 'MODO_OSCURO') { fxTvShutoff(); return '🌙 Modo oscuro + glitch'; }
-      if (intent === 'BUSCAR_INTERNET') {
+      if (intent === 'LIGHT_MODE') { fxChangeBg('#f8fafc', true); return '☀️ Light mode'; }
+      if (intent === 'DARK_MODE') { fxTvShutoff(); return '🌙 Dark mode + glitch'; }
+      if (intent === 'SEARCH') {
         const query = param || phrase;
         window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
         return `🔍 Google: "${query}"`;
       }
-      if (intent === 'TEMPORIZADOR') {
+      if (intent === 'TIMER') {
         const secs = parseTimerSeconds(param || phrase);
         fxCountdown(secs);
-        return `⏱️ Temporizador: ${formatDuration(secs)}`;
+        return `⏱️ Timer: ${formatDuration(secs)}`;
       }
-      if (intent === 'AÑADIR_ITEM') {
+      if (intent === 'ADD_ITEM') {
         const item = param || phrase;
         const emoji = emojiForItem(item);
         shoppingList.push({ text: item, emoji });
         renderShoppingList();
-        return `➕ Añadido: ${emoji} ${item}`;
+        return `➕ Added: ${emoji} ${item}`;
       }
-      if (intent === 'QUITAR_ITEM') {
+      if (intent === 'REMOVE_ITEM') {
         const target = param || phrase;
         const idx = shoppingList.findIndex(i =>
           i.text.toLowerCase().includes(target.toLowerCase()) ||
@@ -839,23 +897,24 @@
         if (idx !== -1) {
           const removed = shoppingList.splice(idx, 1)[0];
           renderShoppingList();
-          return `✅ Quitado: ${removed.emoji} ${removed.text}`;
+          return `✅ Removed: ${removed.emoji} ${removed.text}`;
         }
-        return `❓ No encontré "${target}" en la lista`;
+        return `❓ "${target}" not found in list`;
       }
-      if (intent === 'VACIAR_LISTA') {
+      if (intent === 'CLEAR_LIST') {
         clearShoppingList();
-        return '🗑️ Lista vaciada';
+        return '🗑️ List cleared';
       }
-      // ─ Custom action: busca la más similar al vec actual
+      // custom action — find most similar trigger vec
       if (window._lastQueryVec && customActions.length) {
         const best = customActions
           .filter(ca => ca.vec)
           .map(ca => ({ ca, s: cosineSim(window._lastQueryVec, ca.vec) }))
           .sort((a,b) => b.s - a.s)[0];
         if (best && best.s > 0.65) {
-          fetch(best.ca.url, { mode:'no-cors' }).catch(() => {});
-          return `⚡ "${best.ca.trigger}" → ${best.ca.url}`;
+          const url = best.ca.url.replace(/\{phrase\}/gi, encodeURIComponent(phrase));
+          fetch(url, { mode:'no-cors' }).catch(() => {});
+          return `⚡ "${best.ca.trigger}" → ${url}`;
         }
       }
       return '—';
@@ -1217,6 +1276,7 @@
       panel.classList.remove('hidden');
       total.textContent = `Total: ${formatDuration(totalSecs)}`;
 
+
       function update(secs) {
         const urgent   = secs <= 5 && secs > 0;
         const progress = secs / totalSecs;
@@ -1229,7 +1289,7 @@
         ring.style.filter = urgent ? 'drop-shadow(0 0 6px #ef4444)' : 'drop-shadow(0 0 4px #f59e0b88)';
         display.textContent = secs >= 60 ? `${mm}:${ss}` : `${secs}`;
         display.style.color = urgent ? '#ef4444' : '#f59e0b';
-        label.textContent = urgent ? '⚠ ¡Casi!' : 'en curso…';
+        label.textContent = urgent ? '⚠ Almost!' : 'running…';
         label.style.color = urgent ? '#ef4444' : '';
 
         if (urgent) {
@@ -1251,13 +1311,13 @@
           ring.style.strokeDashoffset = RING_CIRC;
           display.textContent = '✓';
           display.style.color = '#10b981';
-          label.textContent = '¡Tiempo!';
+          label.textContent = 'Time\'s up!';
           label.style.color = '#10b981';
           panel.style.borderColor = 'rgba(16,185,129,0.3)';
           panel.classList.remove('animate-pulse');
           fxFireworks();
           if (Notification.permission === 'granted') {
-            new Notification('⏱️ ¡Tiempo!', { body: `Temporizador de ${formatDuration(totalSecs)} completado.` });
+            new Notification('⏱️ Time\'s up!', { body: `${formatDuration(totalSecs)} timer done.` });
           }
           setTimeout(() => panel.classList.add('hidden'), 4000);
           return;
@@ -1271,15 +1331,12 @@
       $('timer-panel').classList.add('hidden');
     };
 
-    // ─── Marcar frase como ejecutada en el textarea ───────────────────────────
     function consumePhrase(phrase) {
       executedPhrases.add(phrase.toLowerCase().trim());
       const area = $('final-text');
-      // Reemplaza la frase por versión tachada con marcador visual
-      area.value = area.value.replace(phrase, `[✓ ${phrase}]`);
-      // Aplica estilo gris al textarea brevemente para señalizar
-      area.style.color = '#475569';
-      setTimeout(() => { area.style.color = ''; }, 1200);
+      area.style.color = '#4f6a8a';
+      area.style.textDecoration = 'none';
+      setTimeout(() => { area.style.color = ''; }, 2000);
     }
 
     // ─── Pipeline principal ────────────────────────────────────────────────────
@@ -1304,18 +1361,19 @@
       }
 
       renderBars(scores);
+      animateEmbedViz(text, scores, bestIntent);
 
       if (bestScore >= CONFIDENCE_THRESHOLD) {
         showResult(bestIntent, bestScore, latency, text);
         const msg = executeAction(bestIntent, text);
-        $('result-desc').textContent = `${msg} · confianza ${(bestScore*100).toFixed(1)}% · ${latency}ms`;
+        $('result-desc').textContent = `${msg} · confidence ${(bestScore*100).toFixed(1)}% · ${latency}ms`;
         consumePhrase(text);
       } else {
         $('result-card').classList.remove('hidden');
         $('result-icon').textContent = '❓';
-        $('result-title').textContent = 'Sin coincidencia';
+        $('result-title').textContent = 'No match';
         $('result-title').style.color = '#64748b';
-        $('result-desc').textContent = `Confianza máxima: ${(bestScore*100).toFixed(1)}% (umbral: ${CONFIDENCE_THRESHOLD*100}%) · ${latency}ms`;
+        $('result-desc').textContent = `Best score: ${(bestScore*100).toFixed(1)}% (threshold: ${CONFIDENCE_THRESHOLD*100}%) · ${latency}ms`;
         $('stat-intent').textContent = '—';
         $('stat-conf').textContent = (bestScore*100).toFixed(1) + '%';
         $('stat-lat').textContent = latency + 'ms';
@@ -1326,13 +1384,13 @@
     function setupSpeech() {
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) {
-        $('mic-label').textContent = 'Usa Chrome/Edge';
+        $('mic-label').textContent = 'Use Chrome/Edge';
         $('mic-btn').disabled = true;
         setSttStatus('error');
         return;
       }
       recognition = new SR();
-      recognition.lang = 'es-ES';
+      recognition.lang = 'en-US';
       recognition.interimResults = true;
       recognition.continuous = true;  // sigue escuchando sin parar
       recognition.maxAlternatives = 1;
@@ -1360,7 +1418,7 @@
         $('mic-btn').style.borderColor = 'rgba(239,68,68,0.4)';
         $('mic-icon').setAttribute('class', 'w-12 h-12 text-red-400');
         $('listening-ring').classList.remove('hidden');
-        $('mic-label').textContent = 'Escuchando…';
+        $('mic-label').textContent = 'Listening…';
         $('mic-label').style.color = '#ef4444';
         setSttStatus('listening');
       };
@@ -1374,7 +1432,7 @@
         $('mic-btn').style.borderColor = '';
         $('mic-icon').setAttribute('class', 'w-12 h-12 text-indigo-400');
         $('listening-ring').classList.add('hidden');
-        $('mic-label').textContent = 'Pulsa para hablar';
+        $('mic-label').textContent = 'Click to speak';
         $('mic-label').style.color = '';
         $('interim-text').textContent = '';
       };
@@ -1385,12 +1443,12 @@
         if (e.error === 'network') {
           networkError = true;
           isListening = false;
-          $('mic-label').textContent = '⚠ Sin acceso a Google Speech';
+          $('mic-label').textContent = '⚠ Google Speech unreachable';
           $('mic-label').style.color = '#f59e0b';
-          $('interim-text').textContent = 'Desactiva el bloqueador de anuncios o usa otro perfil de Chrome';
+          $('interim-text').textContent = 'Disable your ad-blocker or try a different Chrome profile';
         } else if (e.error === 'not-allowed') {
           isListening = false;
-          $('mic-label').textContent = '⚠ Permiso de micrófono denegado';
+          $('mic-label').textContent = '⚠ Microphone permission denied';
           $('mic-label').style.color = '#ef4444';
         }
       };
@@ -1496,12 +1554,11 @@
       }
 
       try {
-        $('loading-step').textContent = 'Descargando modelo de embeddings MiniLM…';
+        $('loading-step').textContent = 'Downloading MiniLM embedding model…';
         startDownloadSim();
         extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
         stopDownloadSim();
-        // Salta limpiamente al 30% y continúa
-        setBar(PHASE1_MAX, 'Calculando embeddings de referencia…', '');
+        setBar(PHASE1_MAX, 'Computing reference embeddings…', '');
 
         // Embeddings de intenciones
         for (const intent of intentKeys) {
@@ -1511,25 +1568,25 @@
             const out = await extractor(ref, { pooling: 'mean', normalize: true });
             refEmbeddings[intent].push(Array.from(out.data));
             done++;
-            setRefProgress(`${cfg.icon} ${intent}`, `"${ref}"`);
+            setRefProgress(`${cfg.icon} ${intent}`, `embedding "${ref}"`);
           }
         }
 
         // Embeddings de categorías para emoji fallback en lista de compra
         const catPhrases = {
-          '_veg':    'verdura vegetal lechuga espinaca brócoli pepino',
-          '_fruta':  'fruta manzana naranja plátano pera uva fresa',
-          '_carne':  'carne pollo pescado proteína jamón salmón',
-          '_lacteo': 'lácteo leche yogur queso mantequilla nata',
-          '_cereal': 'cereal pan pasta arroz harina galleta',
-          '_higiene':'higiene jabón champú papel higiénico detergente',
-          '_bebida': 'bebida agua zumo refresco cerveza vino café',
+          '_veg':    'vegetable lettuce spinach broccoli cucumber carrot',
+          '_fruta':  'fruit apple orange banana pear grape strawberry',
+          '_carne':  'meat chicken fish protein ham salmon bacon',
+          '_lacteo': 'dairy milk yogurt cheese butter cream',
+          '_cereal': 'cereal bread pasta rice flour cookie',
+          '_higiene':'hygiene soap shampoo toilet paper detergent',
+          '_bebida': 'drink water juice soda beer wine coffee',
         };
         for (const [key, phrase] of Object.entries(catPhrases)) {
           const out = await extractor(phrase, { pooling: 'mean', normalize: true });
           catEmbeddings[key] = Array.from(out.data);
           done++;
-          setRefProgress('Categorías de productos…', phrase);
+          setRefProgress('Product categories…', phrase);
         }
 
         await restoreCustomActionVecs();
@@ -1542,7 +1599,7 @@
         // Barra al 100% y ocultar overlay con fade
         $('loading-bar').style.width = '100%';
         $('loading-pct').textContent = '100%';
-        $('loading-step').textContent = '¡Listo!';
+        $('loading-step').textContent = 'Ready!';
         $('loading-detail').textContent = '';
         await new Promise(r => setTimeout(r, 400));
         const overlay = $('loading-overlay');
@@ -1553,14 +1610,14 @@
         setModelStatus(true);
         $('mic-btn').disabled = false;
         $('mic-btn').classList.remove('opacity-40', 'cursor-not-allowed');
-        $('mic-btn').title = 'Activar/desactivar micrófono';
-        $('mic-label').textContent = 'Pulsa para hablar';
+        $('mic-btn').title = 'Toggle microphone';
+        $('mic-label').textContent = 'Click to speak';
       } catch (err) {
         console.error('Error cargando MiniLM:', err);
         stopDownloadSim();
-        $('loading-step').textContent = '❌ Error cargando modelo';
+        $('loading-step').textContent = '❌ Error loading model';
         $('loading-detail').textContent = err.message || '';
-        $('model-label').textContent = 'Error modelo de embeddings';
+        $('model-label').textContent = 'Embedding model error';
         $('model-dot').className = 'w-2 h-2 rounded-full bg-red-400';
       }
     }
