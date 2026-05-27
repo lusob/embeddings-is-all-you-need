@@ -333,7 +333,7 @@
 
         <!-- Example commands -->
         <div class="glass rounded-xl p-5 space-y-4">
-          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Example commands — click to simulate</div>
+          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Example commands — click to trigger with this text</div>
           <div class="flex flex-wrap gap-2" id="cmd-list"></div>
         </div>
 
@@ -345,14 +345,6 @@
               <div id="result-title" class="font-semibold text-base"></div>
               <div id="result-desc" class="text-slate-400 text-sm mono"></div>
             </div>
-          </div>
-        </div>
-
-        <!-- Embedding visualiser -->
-        <div class="glass rounded-xl p-4 space-y-3">
-          <div class="mono text-xs text-slate-600 uppercase tracking-wider">Embedding pipeline — live</div>
-          <div id="embed-viz" class="space-y-2">
-            <div class="text-slate-600 text-xs mono italic">Waiting for first command…</div>
           </div>
         </div>
 
@@ -560,74 +552,6 @@
       return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-9);
     }
 
-    // ─── Embedding pipeline visualiser ────────────────────────────────────────
-    function animateEmbedViz(text, scores, bestIntent) {
-      const viz = $('embed-viz');
-      viz.innerHTML = '';
-
-      // Phase 1: tokenise — show chars streaming in
-      const tokenDiv = document.createElement('div');
-      tokenDiv.className = 'flex flex-wrap gap-1 items-center min-h-[24px]';
-      viz.appendChild(tokenDiv);
-
-      const words = text.trim().split(/\s+/);
-      let wi = 0;
-      const tokenInterval = setInterval(() => {
-        if (wi >= words.length) {
-          clearInterval(tokenInterval);
-          showVecPhase();
-          return;
-        }
-        const chip = document.createElement('span');
-        chip.className = 'px-1.5 py-0.5 rounded text-xs mono bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 animate-fade-in';
-        chip.textContent = words[wi++];
-        tokenDiv.appendChild(chip);
-      }, 120);
-
-      // Phase 2: vec dot pulses + arrow → intent bars light up
-      function showVecPhase() {
-        const row = document.createElement('div');
-        row.className = 'flex items-center gap-2 mt-2';
-
-        const vecDot = document.createElement('div');
-        vecDot.className = 'w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse flex-shrink-0';
-        row.appendChild(vecDot);
-
-        const arrow = document.createElement('span');
-        arrow.className = 'text-slate-600 text-xs mono';
-        arrow.textContent = '→ cosine →';
-        row.appendChild(arrow);
-
-        const barsWrap = document.createElement('div');
-        barsWrap.className = 'flex-1 space-y-1';
-        row.appendChild(barsWrap);
-        viz.appendChild(row);
-
-        // Sort top-5 intents
-        const top5 = Object.entries(scores).sort((a,b) => b[1]-a[1]).slice(0,5);
-        top5.forEach(([intent, score], i) => {
-          const cfg = INTENTS[intent];
-          const pct = Math.max(0, Math.min(100, score * 100));
-          const color = COLOR_MAP[cfg?.color] || '#6366f1';
-          const isBest = intent === bestIntent && score >= CONFIDENCE_THRESHOLD;
-          const bar = document.createElement('div');
-          bar.className = 'flex items-center gap-1.5';
-          bar.innerHTML = `
-            <span class="mono text-xs w-4 text-center">${cfg?.icon || '·'}</span>
-            <div class="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
-              <div class="h-full rounded-full progress-bar" style="width:0%;background:${color};box-shadow:0 0 4px ${color}88;transition-delay:${i*80}ms"></div>
-            </div>
-            ${isBest ? `<span class="mono text-xs" style="color:${color}">✓</span>` : '<span class="w-3"></span>'}`;
-          barsWrap.appendChild(bar);
-          // Trigger width after paint
-          requestAnimationFrame(() => {
-            const fill = bar.querySelector('.progress-bar');
-            if (fill) fill.style.width = pct + '%';
-          });
-        });
-      }
-    }
-
     function renderBars(scores) {
       const container = $('bars-container');
       container.innerHTML = '';
@@ -651,9 +575,13 @@
     }
 
     function showResult(intent, score, latency, phrase) {
-      const cfg = INTENTS[intent];
-      const color = COLOR_MAP[cfg.color];
-      $('stat-intent').textContent = intent;
+      const isCustom = intent.startsWith('__custom_');
+      const ca = isCustom ? customActions[parseInt(intent.split('_')[2])] : null;
+      const cfg = isCustom ? { icon: '⚡', color: 'amber' } : INTENTS[intent];
+      const label = isCustom ? `⚡ ${ca?.trigger || 'Custom'}` : intent;
+      const color = COLOR_MAP[cfg.color] || '#f59e0b';
+
+      $('stat-intent').textContent = label;
       $('stat-intent').style.color = color;
       $('stat-intent').style.textShadow = `0 0 8px ${color}88`;
       $('stat-conf').textContent = (score*100).toFixed(1) + '%';
@@ -663,7 +591,7 @@
       card.className = 'glass rounded-xl p-5 space-y-2 animate-slide-up';
       card.style.borderColor = color + '33';
       $('result-icon').textContent = cfg.icon;
-      $('result-title').textContent = intent;
+      $('result-title').textContent = label;
       $('result-title').style.color = color;
       $('result-desc').textContent = `"${phrase}" · confidence ${(score*100).toFixed(1)}% · ${latency}ms`;
       card.classList.remove('hidden');
@@ -858,6 +786,16 @@
 
     // ─── Ejecución de acciones ────────────────────────────────────────────────
     function executeAction(intent, phrase) {
+      // custom action — fires by index won in classify()
+      if (intent.startsWith('__custom_')) {
+        const ca = customActions[parseInt(intent.split('_')[2])];
+        if (ca) {
+          const url = ca.url.replace(/\{phrase\}/gi, encodeURIComponent(phrase));
+          fetch(url, { mode:'no-cors' }).catch(() => {});
+          return `⚡ "${ca.trigger}" → ${url}`;
+        }
+        return '—';
+      }
       const param = extractParam(phrase, intent);
 
       if (intent === 'GREET') { fxWavingHand(); return 'Hello! 👋'; }
@@ -904,18 +842,6 @@
       if (intent === 'CLEAR_LIST') {
         clearShoppingList();
         return '🗑️ List cleared';
-      }
-      // custom action — find most similar trigger vec
-      if (window._lastQueryVec && customActions.length) {
-        const best = customActions
-          .filter(ca => ca.vec)
-          .map(ca => ({ ca, s: cosineSim(window._lastQueryVec, ca.vec) }))
-          .sort((a,b) => b.s - a.s)[0];
-        if (best && best.s > 0.65) {
-          const url = best.ca.url.replace(/\{phrase\}/gi, encodeURIComponent(phrase));
-          fetch(url, { mode:'no-cors' }).catch(() => {});
-          return `⚡ "${best.ca.trigger}" → ${url}`;
-        }
       }
       return '—';
     }
@@ -1359,9 +1285,18 @@
         scores[intent] = sim;
         if (sim > bestScore) { bestScore = sim; bestIntent = intent; }
       }
+      // custom actions compete in the same pool
+      customActions.forEach((ca, i) => {
+        if (!ca.vec) return;
+        const sim = cosineSim(queryVec, ca.vec);
+        const key = `__custom_${i}`;
+        scores[key] = sim;
+        if (sim > bestScore) { bestScore = sim; bestIntent = key; }
+      });
 
-      renderBars(scores);
-      animateEmbedViz(text, scores, bestIntent);
+      // only show named-intent bars (filter custom keys)
+      const intentScores = Object.fromEntries(Object.entries(scores).filter(([k]) => !k.startsWith('__')));
+      renderBars(intentScores);
 
       if (bestScore >= CONFIDENCE_THRESHOLD) {
         showResult(bestIntent, bestScore, latency, text);
