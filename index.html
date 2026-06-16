@@ -915,7 +915,7 @@
       fxClear();
       const W = fxCanvas.width, H = fxCanvas.height;
       const START = performance.now();
-      const DURATION = 2800;
+      const DURATION = 1800;
       // Confetti burst underneath
       const confettiColors = ['#f59e0b','#ec4899','#6366f1','#10b981','#ef4444','#06b6d4','#a855f7'];
       const confetti = spawnBurst(W/2, H*0.4, 80, confettiColors, 3, 12, 3, 7, 0.12);
@@ -954,7 +954,7 @@
       fxClear();
       const W = fxCanvas.width, H = fxCanvas.height;
       const COLORS = ['#f59e0b','#fbbf24','#ec4899','#6366f1','#10b981','#ef4444','#06b6d4','#fff','#a855f7'];
-      const END_AT = performance.now() + 4500;
+      const END_AT = performance.now() + 2200;
       const shells = []; // active bursts
 
       function launchShell() {
@@ -966,13 +966,13 @@
         shells.push({ particles: burst, ring: { x:cx, y:cy, r:0, life:1, color:col } });
       }
 
-      // Launch 5 shells staggered
-      for (let i = 0; i < 5; i++) setTimeout(launchShell, i * 700);
+      // Launch shells staggered
+      for (let i = 0; i < 4; i++) setTimeout(launchShell, i * 450);
       // Keep launching while active
       const interval = setInterval(() => {
         if (performance.now() < END_AT) launchShell();
         else clearInterval(interval);
-      }, 600);
+      }, 450);
 
       function tick(now) {
         fxCtx.fillStyle = 'rgba(5,8,16,0.25)';
@@ -1035,6 +1035,8 @@
           tv.className = 'tv-off-layer';
           document.body.appendChild(tv);
           document.body.style.background = '#020617';
+          document.body.style.color = '';
+          document.documentElement.classList.add('dark');
           setTimeout(() => tv.remove(), 700);
           setTimeout(() => { glitchR.remove(); glitchB.remove(); scanline.remove(); }, 900);
         }
@@ -1051,7 +1053,7 @@
       const FS = 14, COLS = Math.floor(W / FS);
       const CHARS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ01ハヒフヘホマミムメモヤユヨラリルレロワヲン'.split('');
       const drops = Array(COLS).fill(0).map(() => Math.random() * -H / FS);
-      const END_AT = performance.now() + 5000;
+      const END_AT = performance.now() + 2500;
 
       function tick(now) {
         fxCtx.fillStyle = 'rgba(5,8,16,0.15)';
@@ -1091,7 +1093,7 @@
       let x = SIZE, y = H * 0.5;
       let vx = 8 + Math.random()*6, vy = -(6+Math.random()*8);
       const GRAVITY = 0.5, DAMPING = 0.75;
-      const END_AT = performance.now() + 5000;
+      const END_AT = performance.now() + 3000;
       const trail = [];
 
       function tick(now) {
@@ -1175,8 +1177,13 @@
         fxCtx.fill();
         if (t >= 1) {
           document.body.style.background = color;
-          if (isLight) document.body.style.color = '#1e293b';
-          else document.body.style.color = '';
+          if (isLight) {
+            document.body.style.color = '#1e293b';
+            document.documentElement.classList.remove('dark');
+          } else {
+            document.body.style.color = '';
+            document.documentElement.classList.add('dark');
+          }
           fxClear();
         } else {
           fxAnimId = requestAnimationFrame(tick);
@@ -1469,7 +1476,7 @@
       function startDownloadSim() {
         const start = performance.now();
         // Curva: pct = PHASE1_MAX * (1 - e^(-t/T))  — llega al ~86% del máx en T ms
-        const T = 4000; // ms para la mitad de la curva
+        const T = 1300; // ms para la mitad de la curva (3x más rápido)
         function tick(now) {
           const t = now - start;
           simPct = PHASE1_MAX * (1 - Math.exp(-t / T));
