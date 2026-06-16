@@ -1451,15 +1451,16 @@
       renderCustomActions();
 
       // Progreso de carga
-      // Fase 1 (0–30%): descarga del modelo — animada con easing, no hay API de progreso real
-      // Fase 2 (30–100%): embeddings de referencia — progreso real frase a frase
+      // Fase 1 (0–99%): descarga del modelo — animada con easing, no hay API de progreso real,
+      //   nunca llega a tope para no quedarse "clavada" en un número si la descarga tarda
+      // Fase 2 (simPct final–100%): embeddings de referencia — progreso real frase a frase
       const intentKeys = Object.keys(INTENTS);
       const totalRefs = intentKeys.reduce((s, k) => s + INTENTS[k].refs.length, 0);
       const catKeys = ['_veg','_fruta','_carne','_lacteo','_cereal','_higiene','_bebida'];
       const totalSteps = totalRefs + catKeys.length;
       let done = 0;
 
-      const PHASE1_MAX = 30; // % reservado para descarga
+      const PHASE1_MAX = 99; // tope de la simulación, deja siempre margen visible hasta el 100%
       const bar = $('loading-bar');
       const pctEl = $('loading-pct');
 
@@ -1471,12 +1472,13 @@
       }
 
       // Simula progreso de descarga: sube rápido al principio, se ralentiza hacia PHASE1_MAX
+      // pero nunca se detiene del todo, así nunca se ve "clavada" en un número fijo
       let downloadRafId = null;
       let simPct = 0;
       function startDownloadSim() {
         const start = performance.now();
         // Curva: pct = PHASE1_MAX * (1 - e^(-t/T))  — llega al ~86% del máx en T ms
-        const T = 1300; // ms para la mitad de la curva (3x más rápido)
+        const T = 1300; // ms para la mitad de la curva
         function tick(now) {
           const t = now - start;
           simPct = PHASE1_MAX * (1 - Math.exp(-t / T));
@@ -1490,8 +1492,8 @@
       }
 
       function setRefProgress(step, detail) {
-        // Fase 2: 30% + proporción real del 70% restante
-        const pct = PHASE1_MAX + Math.round((done / totalSteps) * (100 - PHASE1_MAX));
+        // Fase 2: desde donde quedó la simulación hasta 100%, proporción real de pasos restantes
+        const pct = simPct + (done / totalSteps) * (100 - simPct);
         setBar(pct, step, detail);
       }
 
@@ -1500,7 +1502,7 @@
         startDownloadSim();
         extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
         stopDownloadSim();
-        setBar(PHASE1_MAX, 'Computing reference embeddings…', '');
+        setBar(simPct, 'Computing reference embeddings…', '');
 
         // Embeddings de intenciones
         for (const intent of intentKeys) {
