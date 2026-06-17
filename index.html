@@ -427,6 +427,8 @@
           'change background to', 'set background to', 'background color',
           'red background', 'blue background', 'green background', 'purple background',
           'dark background', 'light background', 'change the bg',
+          'purple', 'red', 'blue', 'green', 'orange', 'pink', 'yellow',
+          'make it purple', 'make it blue', 'make it red',
         ]
       },
       LIGHT_MODE: {
@@ -497,16 +499,14 @@
       'launch fireworks',
       'activate matrix',
       'throw a ball',
-      'change background to deep blue',
+      'change background to purple',
       'dark mode',
       'light mode',
       'search for pasta recipes',
-      'how to get to the Eiffel Tower',
       'set a timer for 30 seconds',
-      'remind me in 2 minutes',
-      'add milk to the list',
-      'add eggs',
-      'remove the milk',
+      'buy milk',
+      'buy eggs',
+      'remove milk',
       'clear the list',
     ];
 
@@ -608,7 +608,9 @@
 
     function extractColor(text) {
       const p = text.toLowerCase();
-      const found = Object.entries(CSS_COLORS).find(([name]) => p.includes(name));
+      // Sort by length descending so "deep blue" matches before "blue"
+      const sorted = Object.entries(CSS_COLORS).sort((a, b) => b[0].length - a[0].length);
+      const found = sorted.find(([name]) => p.includes(name));
       return found ? found[1] : null;
     }
 
