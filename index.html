@@ -801,7 +801,11 @@
       if (intent === 'GREET') { fxWavingHand(); return 'Hello! 👋'; }
       if (intent === 'FIREWORKS') { fxFireworks(); return '🎆 Fireworks!'; }
       if (intent === 'MATRIX') { fxMatrixRain(); return '🟩 Entering The Matrix…'; }
-      if (intent === 'LAUNCH_OBJECT') { fxBouncingBall(); return '🚀 Object launched!'; }
+      if (intent === 'LAUNCH_OBJECT') {
+        const emoji = emojiForLaunch(phrase);
+        fxBouncingBall(emoji);
+        return `${emoji} Object launched!`;
+      }
       if (intent === 'CHANGE_BACKGROUND') {
         const color = extractColor(phrase) || '#1e1b4b';
         fxChangeBg(color);
@@ -1083,12 +1087,27 @@
       fxAnimId = requestAnimationFrame(tick);
     }
 
+    // Mapa palabra → emoji para que el objeto lanzado coincida con lo que se pidió
+    const LAUNCH_EMOJIS = {
+      rocket:'🚀', ball:'⚽', soccer:'⚽', football:'🏈', basketball:'🏀',
+      tennis:'🎾', star:'🌟', crystal:'🔮', orb:'🔮', '8ball':'🎱',
+      boomerang:'🪃', dice:'🎲', balloon:'🎈', frisbee:'🥏', dart:'🎯',
+      arrow:'🏹', bomb:'💣', firework:'🎆', plane:'✈️', missile:'🚀',
+    };
+    const FALLBACK_LAUNCH_EMOJIS = ['🚀','⚽','🎾','🏀','🌟','🔮','🎱','🪃'];
+
+    function emojiForLaunch(text) {
+      const p = text.toLowerCase();
+      for (const [key, em] of Object.entries(LAUNCH_EMOJIS)) {
+        if (p.includes(key)) return em;
+      }
+      return FALLBACK_LAUNCH_EMOJIS[Math.floor(Math.random()*FALLBACK_LAUNCH_EMOJIS.length)];
+    }
+
     // ── 5. Bouncing ball (LANZAR_OBJETO) ─────────────────────────────────────
-    function fxBouncingBall() {
+    function fxBouncingBall(emoji) {
       fxClear();
       const W = fxCanvas.width, H = fxCanvas.height;
-      const EMOJIS = ['🚀','⚽','🎾','🏀','🌟','🔮','🎱','🪃'];
-      const emoji = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
       const SIZE = Math.min(W, H) * 0.08;
       let x = SIZE, y = H * 0.5;
       let vx = 8 + Math.random()*6, vy = -(6+Math.random()*8);
@@ -1275,8 +1294,6 @@
     // ─── Pipeline principal ────────────────────────────────────────────────────
     async function classify(text) {
       if (!extractor || !text.trim()) return;
-      // Ignorar frases ya ejecutadas
-      if (executedPhrases.has(text.toLowerCase().trim())) return;
 
       const t0 = performance.now();
       const outRaw = await extractor(text, { pooling: 'mean', normalize: true });
@@ -1346,11 +1363,13 @@
         }
         $('interim-text').textContent = interim ? `⬤ ${interim}` : '';
         if (final) {
+          const trimmed = final.trim();
+          // Evita reprocesar el mismo resultado final si el motor de voz lo repite
+          if (executedPhrases.has(trimmed.toLowerCase())) return;
           const area = $('final-text');
-          area.value = final.trim();
-          executedPhrases.clear();
+          area.value = trimmed;
           $('interim-text').textContent = '';
-          classify(final.trim());
+          classify(trimmed);
         }
       };
 
@@ -1478,7 +1497,7 @@
       function startDownloadSim() {
         const start = performance.now();
         // Curva: pct = PHASE1_MAX * (1 - e^(-t/T))  — llega al ~86% del máx en T ms
-        const T = 1300; // ms para la mitad de la curva
+        const T = 2600; // ms para la mitad de la curva (mitad de velocidad)
         function tick(now) {
           const t = now - start;
           simPct = PHASE1_MAX * (1 - Math.exp(-t / T));
