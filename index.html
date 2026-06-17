@@ -192,6 +192,7 @@
 
   <!-- Header -->
   <header class="sticky top-0 z-50 glass border-b border-indigo-500/10">
+    <div id="stt-warning" class="hidden bg-red-500/10 border-b border-red-500/30 px-4 py-2 text-xs text-red-400 mono text-center"></div>
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981] animate-pulse"></div>
@@ -374,6 +375,12 @@
 
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-700/30 mt-16 pt-8 pb-4 text-center text-xs text-slate-500 space-y-2">
+      <div>Local semantic intent classification with <a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2" target="_blank" class="text-indigo-400 hover:text-indigo-300 underline">all-MiniLM-L6-v2</a></div>
+      <div><a href="https://github.com/lusob/embeddings-is-all-you-need" target="_blank" class="text-indigo-400 hover:text-indigo-300 underline">View source on GitHub</a></div>
+    </footer>
   </main>
 
   <!-- Transformers.js from CDN -->
@@ -1403,16 +1410,26 @@
       recognition.onerror = (e) => {
         if (e.error === 'aborted') return;
         console.warn('Speech error:', e.error);
+        const warning = $('stt-warning');
         if (e.error === 'network') {
           networkError = true;
           isListening = false;
-          $('mic-label').textContent = '⚠ Google Speech unreachable';
+          warning.textContent = '⚠ Google Speech API unreachable. Disable ad-blocker or use text input instead.';
+          warning.classList.remove('hidden');
+          $('mic-label').textContent = '⚠ Speech unavailable';
           $('mic-label').style.color = '#f59e0b';
-          $('interim-text').textContent = 'Disable your ad-blocker or try a different Chrome profile';
         } else if (e.error === 'not-allowed') {
           isListening = false;
-          $('mic-label').textContent = '⚠ Microphone permission denied';
+          warning.textContent = '⚠ Microphone permission denied. Use text input instead.';
+          warning.classList.remove('hidden');
+          $('mic-label').textContent = '⚠ Permission denied';
           $('mic-label').style.color = '#ef4444';
+        } else if (e.error === 'no-speech') {
+          warning.textContent = '⚠ No speech detected. Try speaking closer to the mic.';
+          warning.classList.remove('hidden');
+        } else {
+          warning.textContent = `⚠ Speech error: ${e.error}. Use text input instead.`;
+          warning.classList.remove('hidden');
         }
       };
     }
