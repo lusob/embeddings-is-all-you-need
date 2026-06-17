@@ -1092,12 +1092,31 @@
 
     // Mapa palabra → emoji para que el objeto lanzado coincida con lo que se pidió
     const LAUNCH_EMOJIS = {
+      // sports
       rocket:'🚀', ball:'⚽', soccer:'⚽', football:'🏈', basketball:'🏀',
-      tennis:'🎾', star:'🌟', crystal:'🔮', orb:'🔮', '8ball':'🎱',
+      tennis:'🎾', ping:'🏓', ping pong:'🏓', volleyball:'🏐',
+      // toys & objects
+      star:'🌟', crystal:'🔮', orb:'🔮', '8ball':'🎱',
       boomerang:'🪃', dice:'🎲', balloon:'🎈', frisbee:'🥏', dart:'🎯',
-      arrow:'🏹', bomb:'💣', firework:'🎆', plane:'✈️', missile:'🚀',
+      // weapons
+      arrow:'🏹', bomb:'💣', firework:'🎆', grenade:'💣', missile:'🚀',
+      // vehicles
+      plane:'✈️', helicopter:'🛩️', rocket ship:'🚀',
+      // food & drink
+      apple:'🍎', orange:'🍊', banana:'🍌', strawberry:'🍓', grapes:'🍇',
+      lemon:'🍋', pineapple:'🍍', watermelon:'🍉', tomato:'🍅',
+      coconut:'🥥', donut:'🍩', cookie:'🍪', chocolate:'🍫',
+      // nature
+      rock:'🪨', stone:'🪨', pebble:'🪨', tree:'🌳', leaf:'🍃',
+      snowball:'⛄', pinecone:'🌲',
+      // animals
+      fish:'🐟', shark:'🐟', bird:'🐦', butterfly:'🦋', bee:'🐝',
+      frog:'🐸', turtle:'🐢', penguin:'🐧', chicken:'🐔',
+      // misc
+      coin:'🪙', ring:'💍', gift:'🎁', present:'🎁', shoe:'👟', boot:'🥾',
+      hat:'🎩', crown:'👑', key:'🔑', lock:'🔒', chain:'⛓️',
     };
-    const FALLBACK_LAUNCH_EMOJIS = ['🚀','⚽','🎾','🏀','🌟','🔮','🎱','🪃'];
+    const FALLBACK_LAUNCH_EMOJIS = ['🚀','⚽','🎾','🏀','🌟','🔮','🎱','🪃','🏓','🎈','🍎','🪨','🐦','💍','🎁'];
 
     function emojiForLaunch(text) {
       const p = text.toLowerCase();
