@@ -810,6 +810,7 @@
       }
       if (intent === 'CHANGE_BACKGROUND') {
         const color = extractColor(phrase) || '#1e1b4b';
+        console.log('[executeAction] CHANGE_BACKGROUND: phrase=', phrase, 'color=', color);
         fxChangeBg(color);
         return `🎨 Background → ${color}`;
       }
@@ -1179,38 +1180,17 @@
 
     // ── 6. Change background (CAMBIAR_FONDO / MODO_CLARO) ────────────────────
     function fxChangeBg(color, isLight=false) {
-      fxClear();
-      const hex = color.replace('#','');
-      const cr = parseInt(hex.slice(0,2),16)||0;
-      const cg = parseInt(hex.slice(2,4),16)||0;
-      const cb = parseInt(hex.slice(4,6),16)||0;
-      const W = fxCanvas.width, H = fxCanvas.height;
-      const START = performance.now();
-
-      function tick(now) {
-        const t = Math.min(1, (now-START)/600);
-        fxCtx.clearRect(0,0,W,H);
-        // ripple fill that reveals new bg color
-        const r = t * Math.hypot(W, H);
-        fxCtx.beginPath();
-        fxCtx.arc(W/2, H/2, r, 0, Math.PI*2);
-        fxCtx.fillStyle = `rgba(${cr},${cg},${cb},${t*0.6})`;
-        fxCtx.fill();
-        if (t >= 1) {
-          document.body.style.background = color;
-          if (isLight) {
-            document.body.style.color = '#1e293b';
-            document.documentElement.classList.remove('dark');
-          } else {
-            document.body.style.color = '';
-            document.documentElement.classList.add('dark');
-          }
-          fxClear();
-        } else {
-          fxAnimId = requestAnimationFrame(tick);
-        }
+      console.log('[fxChangeBg] color:', color, 'isLight:', isLight);
+      // Directamente aplicar el cambio sin animación canvas
+      // (evita posibles conflictos con animaciones concurrentes)
+      document.body.style.background = color;
+      if (isLight) {
+        document.body.style.color = '#1e293b';
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.body.style.color = '';
+        document.documentElement.classList.add('dark');
       }
-      fxAnimId = requestAnimationFrame(tick);
     }
 
     // ── 7. Countdown timer (TEMPORIZADOR) — DOM panel ────────────────────────
