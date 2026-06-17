@@ -1498,11 +1498,16 @@
       let simPct = 0;
       function startDownloadSim() {
         const start = performance.now();
-        // Curva: pct = PHASE1_MAX * (1 - e^(-t/T))  — llega al ~86% del máx en T ms
-        const T = 2600; // ms para la mitad de la curva (mitad de velocidad)
+        // Ease-in-out cubic: sube rápido al principio, se ralentiza hacia PHASE1_MAX
+        // A ~4s alcanza ~85%, dejando margen visible hasta el 100%
+        const DURATION = 8000; // total time the curve would take to reach 99%
+        function easeInOutCubic(t) {
+          return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+        }
         function tick(now) {
           const t = now - start;
-          simPct = PHASE1_MAX * (1 - Math.exp(-t / T));
+          const progress = Math.min(1, t / DURATION);
+          simPct = PHASE1_MAX * easeInOutCubic(progress);
           setBar(simPct);
           downloadRafId = requestAnimationFrame(tick);
         }
